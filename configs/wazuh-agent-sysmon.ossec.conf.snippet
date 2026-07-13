@@ -1,0 +1,14 @@
+<!-- Add inside <ossec_config> in the Wazuh AGENT's ossec.conf on DC01 and WS01. -->
+<!-- Forwards Sysmon's operational channel to the Wazuh manager for detection. -->
+<!-- Sysmon config used: SwiftOnSecurity/sysmon-config (sysmonconfig-export.xml) -->
+
+<localfile>
+  <location>Microsoft-Windows-Sysmon/Operational</location>
+  <log_format>eventchannel</log_format>
+</localfile>
+
+<!-- Optional: also forward PowerShell operational logs (useful for attack detection) -->
+<localfile>
+  <location>Microsoft-Windows-PowerShell/Operational</location>
+  <log_format>eventchannel</log_format>
+</localfile>

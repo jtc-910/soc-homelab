@@ -1,0 +1,14 @@
+# Secrets — never commit
+*passwords*.txt
+*.pem
+*.key
+secrets*
+wazuh-install-files.tar
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Large media (keep screenshots, ignore raw captures/video)
+*.mov
+*.mp4

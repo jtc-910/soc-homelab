@@ -1,0 +1,98 @@
+<svg viewBox="0 0 900 700" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#555555"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#C00000"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="700" fill="#ffffff"/>
+
+  <!-- Internet -->
+  <g>
+    <ellipse cx="450" cy="45" rx="95" ry="32" fill="#E2F0D9" stroke="#548235" stroke-width="1.5"/>
+    <text x="450" y="51" text-anchor="middle" font-size="15" font-weight="bold" fill="#375623">Internet</text>
+  </g>
+  <line x1="450" y1="77" x2="450" y2="112" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Gateway -->
+  <rect x="320" y="112" width="260" height="42" rx="6" fill="#F2F2F2" stroke="#7F7F7F" stroke-width="1.5"/>
+  <text x="450" y="130" text-anchor="middle" font-size="13" font-weight="bold" fill="#333333">Gateway (UTM Shared Network)</text>
+  <text x="450" y="146" text-anchor="middle" font-size="12" fill="#333333">192.168.100.15</text>
+
+  <line x1="450" y1="154" x2="450" y2="188" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Host boundary -->
+  <rect x="50" y="188" width="800" height="470" rx="10" fill="#FAFAFA" stroke="#999999" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="70" y="212" font-size="13" font-weight="bold" fill="#555555">MacBook Pro (M1 Pro) — UTM — all VMs on Shared Network 192.168.100.0/24</text>
+
+  <!-- Bus line -->
+  <line x1="130" y1="255" x2="790" y2="255" stroke="#7F7F7F" stroke-width="2"/>
+
+  <!-- Drops -->
+  <line x1="180" y1="255" x2="180" y2="300" stroke="#7F7F7F" stroke-width="1.5"/>
+  <line x1="380" y1="255" x2="380" y2="300" stroke="#7F7F7F" stroke-width="1.5"/>
+  <line x1="580" y1="255" x2="580" y2="300" stroke="#7F7F7F" stroke-width="1.5"/>
+  <line x1="740" y1="255" x2="740" y2="300" stroke="#7F7F7F" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <!-- DC01 -->
+  <rect x="105" y="300" width="150" height="88" rx="6" fill="#DDEBF7" stroke="#2E75B6" stroke-width="1.5"/>
+  <text x="180" y="322" text-anchor="middle" font-size="13" font-weight="bold" fill="#1F4E79">DC01</text>
+  <text x="180" y="339" text-anchor="middle" font-size="11" fill="#1F4E79">Windows Server 2025</text>
+  <text x="180" y="354" text-anchor="middle" font-size="11" fill="#1F4E79">Domain Controller + DNS</text>
+  <text x="180" y="373" text-anchor="middle" font-size="12" font-weight="bold" fill="#1F4E79">192.168.100.10</text>
+
+  <!-- WS01 -->
+  <rect x="305" y="300" width="150" height="88" rx="6" fill="#DEEBF7" stroke="#2E75B6" stroke-width="1.5"/>
+  <text x="380" y="322" text-anchor="middle" font-size="13" font-weight="bold" fill="#1F4E79">WS01</text>
+  <text x="380" y="339" text-anchor="middle" font-size="11" fill="#1F4E79">Windows 11 Pro</text>
+  <text x="380" y="354" text-anchor="middle" font-size="11" fill="#1F4E79">Domain-joined client</text>
+  <text x="380" y="373" text-anchor="middle" font-size="12" font-weight="bold" fill="#1F4E79">192.168.100.20</text>
+
+  <!-- wazuh -->
+  <rect x="505" y="300" width="150" height="88" rx="6" fill="#FCE4D6" stroke="#C55A11" stroke-width="1.5"/>
+  <text x="580" y="322" text-anchor="middle" font-size="13" font-weight="bold" fill="#833C00">wazuh</text>
+  <text x="580" y="339" text-anchor="middle" font-size="11" fill="#833C00">Ubuntu Server</text>
+  <text x="580" y="354" text-anchor="middle" font-size="11" fill="#833C00">Wazuh SIEM</text>
+  <text x="580" y="373" text-anchor="middle" font-size="12" font-weight="bold" fill="#833C00">192.168.100.30</text>
+
+  <!-- kali (planned) -->
+  <rect x="665" y="300" width="150" height="88" rx="6" fill="#FBE5E5" stroke="#C00000" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <text x="740" y="322" text-anchor="middle" font-size="13" font-weight="bold" fill="#C00000">kali (planned)</text>
+  <text x="740" y="339" text-anchor="middle" font-size="11" fill="#C00000">Kali Linux</text>
+  <text x="740" y="354" text-anchor="middle" font-size="11" fill="#C00000">Attack machine</text>
+  <text x="740" y="373" text-anchor="middle" font-size="12" font-weight="bold" fill="#C00000">192.168.100.40</text>
+
+  <!-- Traffic flows -->
+  <!-- WS01 -> DC01 -->
+  <path d="M 305,420 C 260,440 250,440 210,410" fill="none" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="255" y="458" text-anchor="middle" font-size="11" fill="#333333">login / policies</text>
+
+  <!-- DC01 -> wazuh -->
+  <path d="M 255,480 L 505,480" fill="none" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="380" y="475" text-anchor="middle" font-size="11" fill="#333333">sends logs</text>
+
+  <!-- WS01 -> wazuh -->
+  <path d="M 380,510 C 450,540 500,540 555,510" fill="none" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="470" y="548" text-anchor="middle" font-size="11" fill="#333333">sends logs</text>
+
+  <!-- kali -> DC01 (planned) -->
+  <path d="M 665,440 C 450,600 260,600 190,400" fill="none" stroke="#C00000" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrowRed)"/>
+  <text x="450" y="618" text-anchor="middle" font-size="11" fill="#C00000">attacks (planned)</text>
+
+  <!-- kali -> wazuh (planned) -->
+  <path d="M 720,388 C 690,420 650,420 620,400" fill="none" stroke="#C00000" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrowRed)"/>
+  <text x="700" y="435" text-anchor="middle" font-size="11" fill="#C00000">should be detected in</text>
+
+  <!-- Legend -->
+  <g transform="translate(70,635)">
+    <rect x="0" y="0" width="16" height="10" fill="#DEEBF7" stroke="#2E75B6"/>
+    <text x="22" y="9" font-size="11" fill="#333333">Windows (AD domain)</text>
+    <rect x="180" y="0" width="16" height="10" fill="#FCE4D6" stroke="#C55A11"/>
+    <text x="202" y="9" font-size="11" fill="#333333">Linux / SIEM</text>
+    <rect x="330" y="0" width="16" height="10" fill="#FBE5E5" stroke="#C00000" stroke-dasharray="3,2"/>
+    <text x="352" y="9" font-size="11" fill="#333333">Planned</text>
+  </g>
+</svg>
