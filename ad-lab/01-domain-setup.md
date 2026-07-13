@@ -21,7 +21,7 @@ better choice here.
   later so the machines can see each other on the network)
 - 4 GB RAM, 2–4 CPU cores, 64 GB disk
 - One network card, set to **Shared Network** with the values from
-  [step 0](00-prerequisites.md)
+  [../00-lab-setup.md](../00-lab-setup.md)
 - After the first boot, install the SPICE/guest tools (they fix the screen resolution and let you
   copy-paste)
 
@@ -64,7 +64,7 @@ $env:PROCESSOR_ARCHITECTURE   # should say ARM64, not AMD64
 ```
 
 If it says AMD64, close it and start `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe` as
-Administrator instead. The full story is in [99-troubleshooting](99-troubleshooting.md).
+Administrator instead. The full story is in [../99-troubleshooting.md](../99-troubleshooting.md).
 
 Then install the role and create the domain:
 

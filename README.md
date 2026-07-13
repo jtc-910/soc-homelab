@@ -32,23 +32,33 @@ build the environment, produce real log data, and investigate it in a SIEM.
 - My laptop is an Apple Silicon Mac (ARM), so every machine runs as an ARM64 virtual machine. That
   turned out to matter a lot, because a few things that are easy on a normal Intel PC needed
   workarounds here. I wrote all of those down in
-  [docs/99-troubleshooting.md](docs/99-troubleshooting.md) so someone else (or future me) doesn't
+  [99-troubleshooting.md](99-troubleshooting.md) so someone else (or future me) doesn't
   have to figure them out again.
+
+## The full plan
+
+This repo follows [`PORTFOLIO_ROADMAP.md`](PORTFOLIO_ROADMAP.md) — a much bigger, phased plan
+covering Sysadmin, IAM, SIEM, networking, cloud, and hardening projects. What's below is just what's
+actually built so far (Phase 0 and the start of Phase 1/2); the roadmap file has the full picture and
+what's still open.
 
 ## Build log
 
-Each step has its own page with the exact commands I ran and the problems I hit.
+Each step has its own page with the exact commands I ran and the problems I hit. Folders roughly
+match the roadmap's phases: `ad-lab/` for on-prem Active Directory work, `siem-wazuh/` for the SIEM,
+`incident-writeups/` for investigations.
 
 | Step | What I did | Page | State |
 |---|---|---|---|
-| 0 | Get UTM and the install files ready | [docs/00-prerequisites.md](docs/00-prerequisites.md) | Done |
-| 1 | Set up DC01, the domain controller | [docs/01-dc01-domain-controller.md](docs/01-dc01-domain-controller.md) | Done |
-| 2 | Set up WS01 and join it to the domain | [docs/02-ws01-client-join.md](docs/02-ws01-client-join.md) | Done |
-| 1.5 | Everyday admin tasks (group policies, Intune) | [docs/05-admin-tasks.md](docs/05-admin-tasks.md) | Planned |
-| 3 | Install Wazuh and connect the agents | [docs/03-wazuh-siem.md](docs/03-wazuh-siem.md) | Done |
-| 4 | Check that logs arrive and trigger a test alert | [docs/04-validation.md](docs/04-validation.md) | Done |
-| Write-up | Investigating a failed-logon alert | [docs/06-writeup-failed-logon.md](docs/06-writeup-failed-logon.md) | Done |
-| Notes | Every problem I ran into and how I fixed it | [docs/99-troubleshooting.md](docs/99-troubleshooting.md) | Ongoing |
+| 0 | Get UTM and the install files ready | [00-lab-setup.md](00-lab-setup.md) | Done |
+| 1.1 | Set up DC01, the domain controller | [ad-lab/01-domain-setup.md](ad-lab/01-domain-setup.md) | Done |
+| 1.4 | Set up WS01 and join it to the domain | [ad-lab/04-client-join-least-privilege.md](ad-lab/04-client-join-least-privilege.md) | Domain-join done, least-privilege part open |
+| 1.2, 1.3, 1.5, 1.6 | Users/groups, GPO hardening, file-server ACLs, patching | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned |
+| 1.7 | Harden the Wazuh Linux box (SSH, Fail2ban, UFW) | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned |
+| 2.1, 2.5 | Install Wazuh, connect agents, add Sysmon | [siem-wazuh/01-wazuh-deployment.md](siem-wazuh/01-wazuh-deployment.md) | Done |
+| — | Check that logs arrive and trigger a test alert | [04-validation.md](04-validation.md) | Done |
+| 2.2 | Write-up: investigating a failed-logon alert | [incident-writeups/01-bruteforce.md](incident-writeups/01-bruteforce.md) | Done |
+| Notes | Every problem I ran into and how I fixed it | [99-troubleshooting.md](99-troubleshooting.md) | Ongoing |
 
 ## What I learned to do here
 
@@ -61,10 +71,13 @@ Each step has its own page with the exact commands I ran and the problems I hit.
 
 ## What's next
 
+See [`PORTFOLIO_ROADMAP.md`](PORTFOLIO_ROADMAP.md) for the full, phased plan. Short version:
+
 1. Core lab (this repo): domain controller, client, and Wazuh — done
-2. Attack the domain from Kali (Kerberoasting, Pass-the-Hash) and detect it in Wazuh — planned
-3. A web-application firewall project (nginx + ModSecurity against a vulnerable app) — planned
-4. Bring it together: correlate web attacks and domain attacks in one dashboard — planned
+2. Finish the rest of Phase 1 (GPO hardening, least privilege, file-server ACLs, Linux hardening on
+   the Wazuh box) — planned
+3. Attack the domain from Kali (Kerberoasting, Pass-the-Hash) and detect it in Wazuh — planned
+4. Networking (pfSense/OPNsense, segmentation), then cloud IAM (Entra, Intune, Sentinel) — planned
 
 ---
 

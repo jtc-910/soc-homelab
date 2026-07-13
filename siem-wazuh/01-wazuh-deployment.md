@@ -10,7 +10,7 @@ Goal for this step: one Ubuntu machine running Wazuh, collecting logs from DC01 
 
 - New VM → **Virtualize** → **Linux**, pick the Ubuntu Server ARM64 ISO
 - **"Use Apple Virtualization" turned off** (QEMU), one network card on **Shared Network** with the
-  values from [step 0](00-prerequisites.md)
+  values from [../00-lab-setup.md](../00-lab-setup.md)
 - 4 GB RAM, 40 GB disk
 - During the Ubuntu installer, tick **"Install OpenSSH server"** so I can connect from the Mac's
   terminal (much nicer than typing in the small VM window)
@@ -18,7 +18,7 @@ Goal for this step: one Ubuntu machine running Wazuh, collecting logs from DC01 
 One trap during the install: on the storage screen Ubuntu only uses about half the disk by default.
 When it shows the summary, click the `ubuntu-lv` volume and set its size to the maximum, otherwise
 Wazuh runs out of space later. (If you forget, you can fix it afterwards — see
-[99-troubleshooting](99-troubleshooting.md).)
+[../99-troubleshooting.md](../99-troubleshooting.md).)
 
 ## 2. Give it a fixed IP
 

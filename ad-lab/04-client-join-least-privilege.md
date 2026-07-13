@@ -7,11 +7,15 @@ security logs that Wazuh can collect.
 One thing to know up front: it has to be **Windows 11 Pro**. The Home edition simply can't join a
 domain.
 
+*Note: this covers the domain-join part of roadmap item 1.4. The least-privilege half — a standard
+domain user without local admin rights on WS01 — is still open; see
+[`../PORTFOLIO_ROADMAP.md`](../PORTFOLIO_ROADMAP.md).*
+
 ## 1. Create the virtual machine in UTM
 
 - New VM → **Virtualize** → **Windows**, pick the Windows 11 ARM64 ISO
 - **"Use Apple Virtualization" turned off** (QEMU engine), one network card on **Shared Network**
-  with the values from [step 0](00-prerequisites.md)
+  with the values from [../00-lab-setup.md](../00-lab-setup.md)
 - 4 GB RAM, 64 GB disk; install the guest tools after the first boot
 
 ## 2. Windows setup
@@ -41,7 +45,7 @@ nslookup lab.local   # must answer 192.168.100.10
 ```
 
 (If `nslookup` shows a weird `fe80::...` address and times out, that's an IPv6 issue I ran into —
-the fix is in [99-troubleshooting](99-troubleshooting.md).)
+the fix is in [../99-troubleshooting.md](../99-troubleshooting.md).)
 
 ## 4. Join the domain
 

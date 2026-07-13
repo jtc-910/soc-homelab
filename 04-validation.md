@@ -3,7 +3,7 @@
 Building the machines is one thing; proving that a security event on a Windows machine really turns
 into an alert in the SIEM is the point of the whole lab. This step is that proof.
 
-![The Wazuh Threat Hunting dashboard: 3,343 events in the last 24 hours, 51 high-severity alerts, top MITRE ATT&CK techniques, and both agents actively sending data](../assets/screenshots/04-overview.png)
+![The Wazuh Threat Hunting dashboard: 3,343 events in the last 24 hours, 51 high-severity alerts, top MITRE ATT&CK techniques, and both agents actively sending data](assets/screenshots/04-overview.png)
 
 ## What I checked
 
@@ -23,7 +23,7 @@ into an alert in the SIEM is the point of the whole lab. This step is that proof
 - The domain `lab.local` is up and WS01 is joined to it
 - Wazuh is reachable and both agents are active
 - Sysmon events are visible, and a deliberate wrong-password attempt appears as an alert
-- Screenshots taken (see the [checklist](../assets/screenshots/README.md))
+- Screenshots taken (see the [checklist](assets/screenshots/README.md))
 
 ## How I write up an investigation
 
@@ -37,6 +37,8 @@ For anything worth showing, I use the same simple structure so it reads like a r
 6. Why it matters for SOC work
 
 The failed-logon investigation written this way is in
-[06-writeup-failed-logon.md](06-writeup-failed-logon.md).
+[incident-writeups/01-bruteforce.md](incident-writeups/01-bruteforce.md).
 
-Next up: set up Kali and run a real attack against the domain, then find it in Wazuh.
+Next up: see [`PORTFOLIO_ROADMAP.md`](PORTFOLIO_ROADMAP.md) for what's planned — starting with the
+rest of Phase 1 (GPO hardening, least privilege, file-server ACLs), then Kali against the domain in
+Phase 2.
