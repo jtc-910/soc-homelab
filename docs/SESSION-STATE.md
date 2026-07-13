@@ -17,15 +17,14 @@ Last updated: 2026-07-13
   causing lookup timeouts.
 - Real network diagram added: `assets/diagrams/network-diagram.svg` (embedded in the README) with
   an editable `.drawio` source next to it.
-- All existing screenshots are now embedded directly in docs/00–03 and docs/06, not just referenced
-  by filename.
+- All screenshots are now embedded directly in docs/00–04 and docs/06, not just referenced by
+  filename — the full set (edition checks, Sysmon events, dashboard overview) is complete.
 
 ## Still to do
 
 - Everyday admin tasks (group policies, especially audit logging, plus Intune/Entra) — `docs/05`.
 - Set up Kali and attack the domain (Kerberoasting against `svc-sql`, Pass-the-Hash), then find the
   attack in Wazuh.
-- Add the remaining screenshots (Windows edition screen, Sysmon events, an overview).
 
 ## Useful links
 

@@ -30,6 +30,8 @@ better choice here.
 Choose the edition **Standard (Desktop Experience)**, create a local admin account, and set a strong
 password (I keep mine in my password manager).
 
+![Confirming the installed edition with Get-ComputerInfo on DC01 — Windows Server 2025 Standard](../assets/screenshots/01-server-edition.png)
+
 ## 3. Rename the machine and give it a fixed IP
 
 Open **PowerShell as Administrator** and rename the machine:

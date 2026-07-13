@@ -99,5 +99,4 @@ On DC01 and WS01:
 
 There's a ready-to-paste version of that snippet in [`../configs/`](../configs/).
 
-Still missing: a screenshot of the Sysmon events actually arriving in the dashboard — I'll add it
-next time I'm in there.
+![A Sysmon-based Wazuh alert opened up — a PowerShell process creating an executable file, showing the raw Sysmon fields behind it](../assets/screenshots/03-sysmon-events.png)

@@ -3,6 +3,8 @@
 Building the machines is one thing; proving that a security event on a Windows machine really turns
 into an alert in the SIEM is the point of the whole lab. This step is that proof.
 
+![The Wazuh Threat Hunting dashboard: 3,343 events in the last 24 hours, 51 high-severity alerts, top MITRE ATT&CK techniques, and both agents actively sending data](../assets/screenshots/04-overview.png)
+
 ## What I checked
 
 1. **Both agents are active** — in the Wazuh dashboard, DC01 and WS01 both show up and say "active".

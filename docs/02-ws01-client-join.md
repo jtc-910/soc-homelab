@@ -22,6 +22,8 @@ domain.
   `start ms-cxh:localonly` (on some builds the older `OOBE\BYPASSNRO` works). Then make a local
   account.
 
+![Confirming the edition with winver on WS01 — Windows 11 Pro. (Note: Get-ComputerInfo's WindowsProductName field still says "Windows 10 Pro" on this build; that's a known cosmetic registry quirk, not an actual Windows 10 install — winver and the build number are the reliable way to check.)](../assets/screenshots/01-client-edition.png)
+
 ## 3. Fixed IP, and point DNS at the domain controller
 
 Open **PowerShell as Administrator**:
