@@ -49,6 +49,8 @@ Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 127.0.0.1
 The `127.0.0.1` means "use myself for DNS" — correct for a domain controller, because it *is* the
 DNS server.
 
+![DC01's fixed IP address set in PowerShell](../assets/screenshots/01-dc01-ip.png)
+
 ## 4. Turn it into a domain controller
 
 Important thing I learned the hard way: run these commands in the **native ARM64 PowerShell**. On an
@@ -92,5 +94,10 @@ New-ADUser -Name "svc-sql" -SamAccountName "svc-sql" -AccountPassword (Read-Host
 setspn -S MSSQLSvc/db.lab.local:1433 LAB\svc-sql
 ```
 
-Screenshots for this step are in `../assets/screenshots/` (`01-get-addomain`, the DNS console, and
-the `svc-sql` account showing its SPN).
+![Get-ADDomain confirming the lab.local domain is up](../assets/screenshots/01-get-addomain.png)
+
+![The DNS console showing the lab.local zone](../assets/screenshots/01-dns-console.png)
+
+![Test users and OUs in Active Directory](../assets/screenshots/01-test-users.png)
+
+![The svc-sql account with its SPN, the target for the later Kerberoasting attack](../assets/screenshots/01-svc-sql-spn.png)

@@ -29,6 +29,8 @@ simple one every SOC sees constantly — failed logins (Windows event 4625).
 
 Six alerts appeared within about 12 seconds, all from WS01. Opening one of them showed these details:
 
+![The failed-logon alert opened up in Wazuh, showing the event fields (target user, wrong-password code, MITRE tag)](../assets/screenshots/04-failed-login-alert.png)
+
 | Field | Value | What it means |
 |---|---|---|
 | `rule.description` | Logon Failure – Unknown user or bad password | Wazuh's plain-language summary |
@@ -65,4 +67,4 @@ failures.
 
 The full path works: something happens on the endpoint, the agent forwards it, Wazuh matches a rule,
 and I get an alert I can actually investigate — plus I saw a real defense (account lockout) do its
-job. Screenshot: `04-failed-login-alert`.
+job.

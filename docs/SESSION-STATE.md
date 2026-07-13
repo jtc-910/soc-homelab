@@ -17,6 +17,8 @@ Last updated: 2026-07-13
   causing lookup timeouts.
 - Real network diagram added: `assets/diagrams/network-diagram.svg` (embedded in the README) with
   an editable `.drawio` source next to it.
+- All existing screenshots are now embedded directly in docs/00–03 and docs/06, not just referenced
+  by filename.
 
 ## Still to do
 

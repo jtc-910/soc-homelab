@@ -54,4 +54,6 @@ Log in as `LAB\Administrator` when it asks.
 - After the restart, sign in with a domain account (`LAB\<user>`).
 - On DC01, `Get-ADComputer WS01` should now list the machine.
 
-Screenshots: the domain-join confirmation and the `LAB\` login (`02-lab-login`, `02-ws01-dns`).
+![Signed in as a domain account on WS01 — whoami shows lab\... and the AD groups](../assets/screenshots/02-lab-login.png)
+
+![WS01 using DC01 for DNS, nslookup lab.local resolving cleanly](../assets/screenshots/02-ws01-dns.png)
