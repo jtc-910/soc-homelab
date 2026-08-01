@@ -58,7 +58,7 @@ It takes 5–15 minutes. At the end it prints the login for the `admin` user —
 password manager, not in this repo. The web dashboard is then reachable from the Mac's browser at
 `https://192.168.100.30` (accept the certificate warning; it's self-signed).
 
-![The installer finishing; the admin password is blacked out](../assets/screenshots/03-wazuh-install-done.png)
+![The installer finishing; the admin password is blacked out](../assets/screenshots/siem-wazuh-01-install-done.png)
 
 ## 4. Connect the agents on DC01 and WS01
 
@@ -71,9 +71,9 @@ An "agent" is a small program on each Windows machine that ships its logs to Waz
 
 Both machines should then show up as **active** in the dashboard.
 
-![The Wazuh dashboard login screen](../assets/screenshots/03-dashboard-login.png)
+![The Wazuh dashboard login screen](../assets/screenshots/siem-wazuh-01-dashboard-login.png)
 
-![Both agents, DC01 and WS01, showing as active](../assets/screenshots/03-agents-active.png)
+![Both agents, DC01 and WS01, showing as active](../assets/screenshots/siem-wazuh-01-agents-active.png)
 
 ## 5. Add Sysmon for much better logs
 
@@ -99,4 +99,4 @@ On DC01 and WS01:
 
 There's a ready-to-paste version of that snippet in [`../configs/`](../configs/).
 
-![A Sysmon-based Wazuh alert opened up — a PowerShell process creating an executable file, showing the raw Sysmon fields behind it](../assets/screenshots/03-sysmon-events.png)
+![A Sysmon-based Wazuh alert opened up — a PowerShell process creating an executable file, showing the raw Sysmon fields behind it](../assets/screenshots/siem-wazuh-01-sysmon-events.png)

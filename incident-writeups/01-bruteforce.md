@@ -29,7 +29,7 @@ simple one every SOC sees constantly — failed logins (Windows event 4625).
 
 Six alerts appeared within about 12 seconds, all from WS01. Opening one of them showed these details:
 
-![The failed-logon alert opened up in Wazuh, showing the event fields (target user, wrong-password code, MITRE tag)](../assets/screenshots/04-failed-login-alert.png)
+![The failed-logon alert opened up in Wazuh, showing the event fields (target user, wrong-password code, MITRE tag)](../assets/screenshots/incident-01-failed-login-alert.png)
 
 | Field | Value | What it means |
 |---|---|---|

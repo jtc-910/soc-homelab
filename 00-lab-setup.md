@@ -78,10 +78,10 @@ DC01 first (it provides the domain and DNS everything else depends on), then WS0
 
 ## The three VMs running in UTM
 
-![UTM VM list showing DC01, WS01, and the Wazuh Ubuntu VM as QEMU machines](assets/screenshots/00-utm-vm-list.png)
+![UTM VM list showing DC01, WS01, and the Wazuh Ubuntu VM as QEMU machines](assets/screenshots/lab-setup-00-utm-vm-list.png)
 
-![DC01 (Windows Server) running in UTM](assets/screenshots/00-utm-winserver.png)
+![DC01 (Windows Server) running in UTM](assets/screenshots/lab-setup-00-utm-winserver.png)
 
-![WS01 (Windows 11 client) running in UTM, showing its Guest IP on the Shared Network](assets/screenshots/00-utm-win11client.png)
+![WS01 (Windows 11 client) running in UTM, showing its Guest IP on the Shared Network](assets/screenshots/lab-setup-00-utm-win11client.png)
 
-![The Ubuntu (Wazuh) VM running in UTM](assets/screenshots/00-utm-ubuntuserver.png)
+![The Ubuntu (Wazuh) VM running in UTM](assets/screenshots/lab-setup-00-utm-ubuntuserver.png)

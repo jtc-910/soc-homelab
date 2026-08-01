@@ -26,7 +26,7 @@ domain user without local admin rights on WS01 — is still open; see
   `start ms-cxh:localonly` (on some builds the older `OOBE\BYPASSNRO` works). Then make a local
   account.
 
-![Confirming the edition with winver on WS01 — Windows 11 Pro. (Note: Get-ComputerInfo's WindowsProductName field still says "Windows 10 Pro" on this build; that's a known cosmetic registry quirk, not an actual Windows 10 install — winver and the build number are the reliable way to check.)](../assets/screenshots/01-client-edition.png)
+![Confirming the edition with winver on WS01 — Windows 11 Pro. (Note: Get-ComputerInfo's WindowsProductName field still says "Windows 10 Pro" on this build; that's a known cosmetic registry quirk, not an actual Windows 10 install — winver and the build number are the reliable way to check.)](../assets/screenshots/ad-lab-04-client-edition.png)
 
 ## 3. Fixed IP, and point DNS at the domain controller
 
@@ -60,6 +60,6 @@ Log in as `LAB\Administrator` when it asks.
 - After the restart, sign in with a domain account (`LAB\<user>`).
 - On DC01, `Get-ADComputer WS01` should now list the machine.
 
-![Signed in as a domain account on WS01 — whoami shows lab\... and the AD groups](../assets/screenshots/02-lab-login.png)
+![Signed in as a domain account on WS01 — whoami shows lab\... and the AD groups](../assets/screenshots/ad-lab-04-lab-login.png)
 
-![WS01 using DC01 for DNS, nslookup lab.local resolving cleanly](../assets/screenshots/02-ws01-dns.png)
+![WS01 using DC01 for DNS, nslookup lab.local resolving cleanly](../assets/screenshots/ad-lab-04-ws01-dns.png)

@@ -108,7 +108,7 @@ analysis.
 - **Status:** only a few test users so far (including `svc-sql`), created by hand. No 10-15 users
   from a script yet, and no proper OU structure by department. Still open.
 
-### 1.3 — Group policies: hardening and settings (medium)
+### 1.3 — Group policies: hardening and settings (medium) — in progress
 - **Goal:** several group policies: block USB storage, a password policy, force a screen lock,
   turn on PowerShell logging.
 - **Skills:** Group Policy, endpoint hardening, logging configuration.
@@ -116,8 +116,9 @@ analysis.
   and how I tested it.
 - **Why it matters for SOC work:** the PowerShell logging policy directly feeds detection — I'd be
   generating the exact logs I later hunt through.
-- **Status:** open. This is the next thing I'm planning to do — starting with audit logging, because
-  that immediately gives Wazuh more to work with.
+- **Status:** started with the audit-logging GPO (logon, account management, process creation with
+  command-line logging) — see [`ad-lab/03-gpo-hardening.md`](ad-lab/03-gpo-hardening.md). USB
+  blocking, password policy, and the other settings are still open.
 
 ### 1.4 — Client join and least privilege (small) — partly done
 - **Goal:** join a Windows 11 client to the domain, and set up a standard user account without local

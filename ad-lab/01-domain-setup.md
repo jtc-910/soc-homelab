@@ -30,7 +30,7 @@ better choice here.
 Choose the edition **Standard (Desktop Experience)**, create a local admin account, and set a strong
 password (I keep mine in my password manager).
 
-![Confirming the installed edition with Get-ComputerInfo on DC01 — Windows Server 2025 Standard](../assets/screenshots/01-server-edition.png)
+![Confirming the installed edition with Get-ComputerInfo on DC01 — Windows Server 2025 Standard](../assets/screenshots/ad-lab-01-server-edition.png)
 
 ## 3. Rename the machine and give it a fixed IP
 
@@ -51,7 +51,7 @@ Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 127.0.0.1
 The `127.0.0.1` means "use myself for DNS" — correct for a domain controller, because it *is* the
 DNS server.
 
-![DC01's fixed IP address set in PowerShell](../assets/screenshots/01-dc01-ip.png)
+![DC01's fixed IP address set in PowerShell](../assets/screenshots/ad-lab-01-dc01-ip.png)
 
 ## 4. Turn it into a domain controller
 
@@ -96,10 +96,10 @@ New-ADUser -Name "svc-sql" -SamAccountName "svc-sql" -AccountPassword (Read-Host
 setspn -S MSSQLSvc/db.lab.local:1433 LAB\svc-sql
 ```
 
-![Get-ADDomain confirming the lab.local domain is up](../assets/screenshots/01-get-addomain.png)
+![Get-ADDomain confirming the lab.local domain is up](../assets/screenshots/ad-lab-01-get-addomain.png)
 
-![The DNS console showing the lab.local zone](../assets/screenshots/01-dns-console.png)
+![The DNS console showing the lab.local zone](../assets/screenshots/ad-lab-01-dns-console.png)
 
-![Test users and OUs in Active Directory](../assets/screenshots/01-test-users.png)
+![Test users and OUs in Active Directory](../assets/screenshots/ad-lab-01-test-users.png)
 
-![The svc-sql account with its SPN, the target for the later Kerberoasting attack](../assets/screenshots/01-svc-sql-spn.png)
+![The svc-sql account with its SPN, the target for the later Kerberoasting attack](../assets/screenshots/ad-lab-01-svc-sql-spn.png)

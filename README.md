@@ -53,7 +53,8 @@ match the roadmap's phases: `ad-lab/` for on-prem Active Directory work, `siem-w
 | 0 | Get UTM and the install files ready | [00-lab-setup.md](00-lab-setup.md) | Done |
 | 1.1 | Set up DC01, the domain controller | [ad-lab/01-domain-setup.md](ad-lab/01-domain-setup.md) | Done |
 | 1.4 | Set up WS01 and join it to the domain | [ad-lab/04-client-join-least-privilege.md](ad-lab/04-client-join-least-privilege.md) | Domain-join done, least-privilege part open |
-| 1.2, 1.3, 1.5, 1.6 | Users/groups, GPO hardening, file-server ACLs, patching | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned |
+| 1.3 | Audit-logging group policy | [ad-lab/03-gpo-hardening.md](ad-lab/03-gpo-hardening.md) | In progress |
+| 1.2, 1.5, 1.6 | Users/groups, file-server ACLs, patching | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned |
 | 1.7 | Harden the Wazuh Linux box (SSH, Fail2ban, UFW) | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned |
 | 2.1, 2.5 | Install Wazuh, connect agents, add Sysmon | [siem-wazuh/01-wazuh-deployment.md](siem-wazuh/01-wazuh-deployment.md) | Done |
 | — | Check that logs arrive and trigger a test alert | [04-validation.md](04-validation.md) | Done |
