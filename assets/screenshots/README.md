@@ -27,11 +27,14 @@ files from different areas don't collide just because they happen to share a ste
 - `ad-lab-03-audit-categories.png` — the three enabled audit categories in the GPO editor
 - `ad-lab-03-commandline-logging.png` — "include command line" setting turned on
 - `ad-lab-03-gpupdate-forced.png` — `gpupdate /force` applying the new policy
+- `ad-lab-03-process-creation-event.png` — a real 4688 event in Wazuh with the command line visible
 
-## ad-lab/04-client-join-least-privilege.md — the client (WS01)
+## ad-lab/04-client-join-least-privilege.md — the client (WS01) and least privilege
 - `ad-lab-04-client-edition.png` — `winver` on WS01, confirming Windows 11 Pro
 - `ad-lab-04-lab-login.png` — signed in as a domain account (`whoami` shows `lab\...` and the AD groups)
 - `ad-lab-04-ws01-dns.png` — WS01 using DC01 for DNS, and `nslookup lab.local` resolving cleanly
+- `ad-lab-04-local-admins.png` — the local Administrators group on WS01, no domain test users in it
+- `ad-lab-04-least-privilege-denied.png` — a standard domain user denied when trying an admin action
 
 ## siem-wazuh/01-wazuh-deployment.md — Wazuh (the SIEM)
 - `siem-wazuh-01-install-done.png` — the installer finishing (admin password blacked out)
@@ -46,6 +49,8 @@ files from different areas don't collide just because they happen to share a ste
 - `validation-04-overview.png` — the Threat Hunting dashboard: total events, alert severities, top
   MITRE ATT&CK techniques, and alert volume across all agents
 
+## ad-lab/02-users-and-groups.md — users, groups, and OUs (continued)
+- `ad-lab-02-ou-structure.png` — the four OUs alongside the Windows default containers in ADUC
+
 ## Still to add
-- A 4688 (process creation) event in Wazuh with the command line visible, for
-  `ad-lab/03-gpo-hardening.md`.
+- Nothing outstanding right now.

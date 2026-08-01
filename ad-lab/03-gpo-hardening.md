@@ -49,7 +49,7 @@ Then checked that new events actually started arriving in Wazuh:
 data.win.system.eventID : "4688"
 ```
 
-<!-- still to add: a 4688 event in Wazuh, with the command line visible -->
+![A 4688 process-creation event in Wazuh, with the command line visible](../assets/screenshots/ad-lab-03-process-creation-event.png)
 
 ## Why this matters for SOC work
 

@@ -98,17 +98,18 @@ analysis.
 - **Status:** [`ad-lab/01-domain-setup.md`](ad-lab/01-domain-setup.md) — Windows Server 2025 (ARM),
   domain `lab.local`, DNS is running, DHCP isn't (I'm using fixed IPs in the lab instead).
 
-### 1.2 — Users, groups, and OUs (small) — partly done
+### 1.2 — Users, groups, and OUs (small) — done
 - **Goal:** a realistic org structure: OUs for departments, security groups, 10-15 test users created
   through PowerShell.
 - **Skills:** identity basics, OU design, PowerShell (`New-ADUser` in a loop).
 - **Deliverable:** `ad-lab/02-users-and-groups.md` plus the PowerShell script itself, in the repo.
 - **Why it matters for SOC work:** understanding group membership is central to spotting privilege
   escalation.
-- **Status:** only a few test users so far (including `svc-sql`), created by hand. No 10-15 users
-  from a script yet, and no proper OU structure by department. Still open.
+- **Status:** [`ad-lab/02-users-and-groups.md`](ad-lab/02-users-and-groups.md) — the four OUs, three
+  department groups (IT, Sales, Finance), and 12 test users created via
+  [`ad-lab/scripts/create-users.ps1`](ad-lab/scripts/create-users.ps1).
 
-### 1.3 — Group policies: hardening and settings (medium) — in progress
+### 1.3 — Group policies: hardening and settings (medium) — partly done
 - **Goal:** several group policies: block USB storage, a password policy, force a screen lock,
   turn on PowerShell logging.
 - **Skills:** Group Policy, endpoint hardening, logging configuration.
@@ -116,11 +117,12 @@ analysis.
   and how I tested it.
 - **Why it matters for SOC work:** the PowerShell logging policy directly feeds detection — I'd be
   generating the exact logs I later hunt through.
-- **Status:** started with the audit-logging GPO (logon, account management, process creation with
-  command-line logging) — see [`ad-lab/03-gpo-hardening.md`](ad-lab/03-gpo-hardening.md). USB
-  blocking, password policy, and the other settings are still open.
+- **Status:** [`ad-lab/03-gpo-hardening.md`](ad-lab/03-gpo-hardening.md) — the audit-logging GPO is
+  done and verified (logon, account management, and process creation with command-line logging, with
+  a real 4688 event confirmed in Wazuh). USB blocking, the password policy, and the other settings
+  are still open.
 
-### 1.4 — Client join and least privilege (small) — partly done
+### 1.4 — Client join and least privilege (small) — done
 - **Goal:** join a Windows 11 client to the domain, and set up a standard user account without local
   admin rights.
 - **Skills:** domain join, the least-privilege principle.
@@ -128,8 +130,9 @@ analysis.
 - **Why it matters for SOC work:** least privilege is one of the most important preventive controls
   there is.
 - **Status:** [`ad-lab/04-client-join-least-privilege.md`](ad-lab/04-client-join-least-privilege.md)
-  — the domain join is done, the least-privilege part (a standard user with no local admin rights) is
-  still open.
+  — domain join done, and confirmed that domain test users are not local admins on WS01 (checked
+  `Administrators` group membership, then confirmed a standard user actually gets denied when trying
+  something that needs admin rights).
 
 ### 1.5 — File server and NTFS permissions (medium)
 - **Goal:** shared folders with layered permissions (one folder per department), and understanding

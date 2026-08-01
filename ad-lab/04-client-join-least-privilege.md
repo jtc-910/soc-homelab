@@ -7,9 +7,6 @@ security logs that Wazuh can collect.
 One thing to know up front: it has to be **Windows 11 Pro**. The Home edition simply can't join a
 domain.
 
-*Note: this covers the domain-join part of roadmap item 1.4. The least-privilege half — a standard
-domain user without local admin rights on WS01 — is still open; see
-[`../PORTFOLIO_ROADMAP.md`](../PORTFOLIO_ROADMAP.md).*
 
 ## 1. Create the virtual machine in UTM
 
@@ -63,3 +60,33 @@ Log in as `LAB\Administrator` when it asks.
 ![Signed in as a domain account on WS01 — whoami shows lab\... and the AD groups](../assets/screenshots/ad-lab-04-lab-login.png)
 
 ![WS01 using DC01 for DNS, nslookup lab.local resolving cleanly](../assets/screenshots/ad-lab-04-ws01-dns.png)
+
+## 6. Least privilege — checking domain users aren't local admins
+
+Joining WS01 to the domain doesn't automatically make every domain user an admin on it — but it's
+worth actually checking that, instead of assuming it. Because Windows on this VM isn't in English,
+`net localgroup Administrators` fails with "system error 1376" (the group name is localized). Using
+the well-known SID sidesteps that:
+
+```powershell
+Get-LocalGroupMember -SID "S-1-5-32-544"
+# or, using the German group name directly:
+net localgroup Administratoren
+```
+
+![The local Administrators group on WS01 — only the local Administrator account, my own local account, and LAB\Domain Admins. None of the domain test users are in it.](../assets/screenshots/ad-lab-04-local-admins.png)
+
+None of the test users from [`02-users-and-groups.md`](02-users-and-groups.md) (like `abauer`) show
+up here, so they're standard, non-privileged accounts on WS01 by default.
+
+To prove that actually holds up, I signed in as `LAB\abauer` and tried something that needs admin
+rights — writing a file into `C:\Windows`:
+
+```powershell
+New-Item -Path "C:\Windows\test.txt" -ItemType File
+```
+
+![Access denied when a standard domain user tries to write to C:\Windows](../assets/screenshots/ad-lab-04-least-privilege-denied.png)
+
+Denied, as expected. Least privilege for standard domain users on WS01 is confirmed, not just
+assumed.
