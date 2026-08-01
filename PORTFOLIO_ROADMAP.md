@@ -164,6 +164,58 @@ analysis.
 - **Status:** open — the Wazuh Ubuntu VM is currently unhardened (password login still works, no
   Fail2ban, no UFW rules).
 
+### 1.8 — Set up DHCP on DC01 (small, doubles as Network+ practice)
+- **Goal:** add the DHCP role to DC01, create a scope for the lab network, and set reservations for
+  DC01, WS01, and the Wazuh box instead of the fixed IPs I've been using by hand.
+- **Skills:** DHCP scopes, reservations, leases — a core Network+ topic (DNS/DHCP domain).
+- **Deliverable:** `ad-lab/07-dhcp.md`.
+- **Why it matters for SOC work:** DHCP logs are a common source for tying an IP address back to a
+  device at a point in time during an investigation.
+- **Status:** open. Doesn't touch the existing network topology, so it can be done any time.
+
+### 1.9 — A deliberate network troubleshooting exercise (small, Network+ practice)
+- **Goal:** break something on purpose (wrong subnet mask, wrong default gateway, DNS pointed at the
+  wrong server) and then diagnose and fix it using a proper troubleshooting method instead of
+  guessing, and write it up as a before/after.
+- **Skills:** structured network troubleshooting — this is close to the Network+ troubleshooting
+  methodology, so it doubles as exam practice.
+- **Deliverable:** `ad-lab/08-network-troubleshooting.md`.
+- **Why it matters for SOC work:** a lot of "is this an attack or just broken config" triage starts
+  with the same systematic troubleshooting instinct.
+- **Status:** open. I already have real troubleshooting stories in `99-troubleshooting.md` — this
+  would be a deliberately staged one, written up the same honest way.
+
+### 1.10 — DNS beyond the basics (small)
+- **Goal:** go past "DNS resolves names" into record types, zone transfers (and why they should be
+  restricted), and split-horizon DNS.
+- **Skills:** DNS internals — another core Network+ topic, and a natural follow-up to the DNS cleanup
+  I already did (see `99-troubleshooting.md`).
+- **Deliverable:** `ad-lab/09-dns-deep-dive.md`.
+- **Why it matters for SOC work:** DNS is one of the most abused protocols for both C2 and
+  exfiltration — understanding it properly, not just "it resolves names", matters for detection.
+- **Status:** open.
+
+### 1.11 — Windows Firewall rules as an ACL warm-up (small)
+- **Goal:** use the Windows Defender Firewall on DC01/WS01 to write ACL-style rules (block specific
+  traffic, then test that it's actually blocked) — a lightweight preview of firewall logic before
+  building a dedicated firewall VM in Phase 3.
+- **Skills:** basic firewall rule logic, testing that a rule actually does what I think it does.
+- **Deliverable:** `ad-lab/10-windows-firewall-acls.md`.
+- **Why it matters for SOC work:** reading and reasoning about firewall rules is a building block for
+  the real pfSense work later (3.1) and for understanding firewall logs in general.
+- **Status:** open. Doesn't require any topology changes, unlike the real Phase 3 firewall work.
+
+### 1.12 — Wireshark traffic analysis, pulled forward (small)
+- **Goal:** same as roadmap item 3.3 below — capture and analyze traffic (a plaintext login, a port
+  scan) — but done now instead of waiting for Phase 3, since it only captures existing traffic and
+  doesn't require changing the network.
+- **Skills:** packet analysis, protocol understanding — a core Network+ topic.
+- **Deliverable:** `network/03-wireshark-analysis.md` (same deliverable as 3.3 — doing this early just
+  means 3.3 is already done by the time Phase 3 starts).
+- **Why it matters for SOC work:** packet-capture analysis is a Tier-1/Tier-2 skill for
+  network-related alerts.
+- **Status:** open.
+
 ---
 
 ## Phase 2 — SIEM and detection engineering (alongside TryHackMe SAL1 / Splunk)
@@ -272,7 +324,8 @@ This is where my existing CCNA knowledge shows up in the portfolio.
 - **Deliverable:** `network/03-wireshark-analysis.md` with annotated screenshots.
 - **Why it matters for SOC work:** packet-capture analysis is a Tier-1/Tier-2 skill for
   network-related alerts.
-- **Status:** open.
+- **Status:** pulled forward to 1.12, since it doesn't need the Phase 3 network rebuild — check there
+  first.
 
 ### 3.4 — IDS with Suricata or Snort (large)
 - **Goal:** set up an IDS, trigger a signature, send the alert into the SIEM.
