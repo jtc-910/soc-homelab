@@ -52,5 +52,29 @@ files from different areas don't collide just because they happen to share a ste
 ## ad-lab/02-users-and-groups.md — users, groups, and OUs (continued)
 - `ad-lab-02-ou-structure.png` — the four OUs alongside the Windows default containers in ADUC
 
+## ad-lab/05-fileserver-acls.md — file server and NTFS permissions
+- `ad-lab-05-ntfs-permissions.png` — NTFS permissions on a department folder, only the matching group
+  and Domain Admins
+- `ad-lab-05-access-granted.png` — a user accessing their own department's share
+- `ad-lab-05-access-denied.png` — the same user denied on a different department's share
+
+## siem-wazuh/02-patch-management.md — updating Wazuh (4.14.6 to 4.14.7)
+- `siem-wazuh-02-update-available.png` — apt showing the three Wazuh packages as upgradable
+- `siem-wazuh-02-updated-version.png` — `wazuh-control info` showing the new version after the upgrade
+- `siem-wazuh-02-agents-after-update.png` — both agents still active after the update
+
+## linux-lab/01-ssh-hardening.md — hardening the Wazuh VM (SSH, Fail2ban)
+- `linux-lab-01-sshd-config.png` — `PasswordAuthentication no` and `PermitRootLogin no` set in
+  `sshd_config`
+- `linux-lab-01-cloud-init-config-change.png` — the same setting fixed in the cloud-init override
+  file that was actually winning
+- `linux-lab-01-key-login-working.png` — successful SSH login using the key, no password prompt
+- `linux-lab-01-password-login-denied.png` — a password-only login attempt refused outright
+- `linux-lab-01-fail2ban-status.png` — `fail2ban-client status sshd` showing the jail active
+- `linux-lab-01-fail2ban-banned.png` — my own IP address showing up as banned after a few failed
+  attempts
+- `linux-lab-01-fail2ban-connection-refused.png` — a new SSH connection refused while banned
+- `linux-lab-01-fail2ban-unbanned.png` — the IP removed from the ban list again
+
 ## Still to add
 - Nothing outstanding right now.

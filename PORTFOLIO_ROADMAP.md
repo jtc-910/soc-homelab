@@ -134,22 +134,41 @@ analysis.
   `Administrators` group membership, then confirmed a standard user actually gets denied when trying
   something that needs admin rights).
 
-### 1.5 — File server and NTFS permissions (medium)
+### 1.5 — File server and NTFS permissions (medium) — done
 - **Goal:** shared folders with layered permissions (one folder per department), and understanding
   share permissions versus NTFS permissions.
 - **Skills:** file servers, access control lists, permission inheritance.
 - **Deliverable:** `ad-lab/05-fileserver-acls.md`.
 - **Why it matters for SOC work:** data theft and ransomware both target shared folders — understanding
   the permission logic is a must.
-- **Status:** open.
+- **Status:** [`ad-lab/05-fileserver-acls.md`](ad-lab/05-fileserver-acls.md) — three department shares
+  on DC01, wide-open share permissions with NTFS doing the actual restricting, tested and confirmed
+  with a real user (`abauer` gets into `IT`, denied from `Finance`).
 
-### 1.6 — Patch management (WSUS, optional) (large)
+### 1.6 — Patch management (WSUS, optional) (large) — skipped
 - **Goal:** set up the WSUS role, or at least document a patching strategy.
 - **Skills:** patch management, the vulnerability lifecycle.
 - **Deliverable:** `ad-lab/06-patch-management.md`.
 - **Why it matters for SOC work:** unpatched systems are the most common way in — understanding
   patching is the basis of vulnerability management.
-- **Status:** open, optional.
+- **Status:** skipped on purpose. With only two machines (DC01, WS01), a full WSUS deployment
+  wouldn't prove much beyond "I can install a role" — the effort-to-signal ratio is poor here. Could
+  revisit later if the lab grows to more endpoints. Ended up covering patch management a different,
+  more organic way instead — see 1.6b below.
+
+### 1.6b — Patch management, the real version: updating Wazuh itself (small) — done
+- **Goal:** instead of a symbolic WSUS setup, patch a service that's actually running in the lab — a
+  real Wazuh update (4.14.6 to 4.14.7) came up while working on the lab, so I used that.
+- **Skills:** patch management on a live, multi-component system: backup first, correct upgrade order,
+  health checks between steps, post-upgrade verification.
+- **Deliverable:** `siem-wazuh/02-patch-management.md`.
+- **Why it matters for SOC work:** patch management is about process, not just clicking "update" — a
+  SIEM losing agent connections mid-upgrade is its own incident. This proves the process, not just
+  that a role can be installed.
+- **Status:** [`siem-wazuh/02-patch-management.md`](siem-wazuh/02-patch-management.md) — full VM clone
+  as a rollback point (UTM has no live snapshots), indexer backed up, upgraded in the correct order
+  (indexer → server → dashboard) with a cluster-health check in between, confirmed both agents still
+  connected afterward.
 
 ### 1.7 — Basic Linux server hardening and SSH hardening (medium, first Linux step)
 - **Goal:** properly harden a lightweight Linux VM (for example, the Wazuh manager): key-based SSH
@@ -161,8 +180,10 @@ analysis.
 - **Why it matters for SOC work:** SSH is the most common way into an internet-facing Linux server;
   without understanding the hardening basics, I wouldn't be able to make sense of the related alerts
   later.
-- **Status:** open — the Wazuh Ubuntu VM is currently unhardened (password login still works, no
-  Fail2ban, no UFW rules).
+- **Status:** partly done — key-based SSH login is enforced (password login and root login
+  disabled) and Fail2ban is active on the SSH jail, tested by getting my own IP banned and
+  unbanning it again. UFW rules, disabling unnecessary services, and automatic security updates are
+  still open. See [`linux-lab/01-ssh-hardening.md`](linux-lab/01-ssh-hardening.md).
 
 ### 1.8 — Set up DHCP on DC01 (small, doubles as Network+ practice)
 - **Goal:** add the DHCP role to DC01, create a scope for the lab network, and set reservations for

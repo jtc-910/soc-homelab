@@ -55,8 +55,10 @@ match the roadmap's phases: `ad-lab/` for on-prem Active Directory work, `siem-w
 | 1.2 | Users, groups, and OUs | [ad-lab/02-users-and-groups.md](ad-lab/02-users-and-groups.md) | Done |
 | 1.3 | Audit-logging group policy | [ad-lab/03-gpo-hardening.md](ad-lab/03-gpo-hardening.md) | Done |
 | 1.4 | Set up WS01, join it to the domain, verify least privilege | [ad-lab/04-client-join-least-privilege.md](ad-lab/04-client-join-least-privilege.md) | Done |
-| 1.5, 1.6 | File-server ACLs, patching | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned |
-| 1.7 | Harden the Wazuh Linux box (SSH, Fail2ban, UFW) | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned |
+| 1.5 | File-server ACLs | [ad-lab/05-fileserver-acls.md](ad-lab/05-fileserver-acls.md) | Done |
+| 1.6 | Patching (WSUS) | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Skipped (not worth it for 2 machines) |
+| 1.6b | Patch management, for real: updating Wazuh itself | [siem-wazuh/02-patch-management.md](siem-wazuh/02-patch-management.md) | Done |
+| 1.7 | Harden the Wazuh Linux box (SSH, Fail2ban, UFW) | [linux-lab/01-ssh-hardening.md](linux-lab/01-ssh-hardening.md) | Partly done (SSH + Fail2ban; UFW and auto-updates still open) |
 | 1.8–1.12 | Small networking labs (DHCP, DNS, troubleshooting, firewall ACLs, Wireshark) — doubles as Network+ practice | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned |
 | 2.1, 2.5 | Install Wazuh, connect agents, add Sysmon | [siem-wazuh/01-wazuh-deployment.md](siem-wazuh/01-wazuh-deployment.md) | Done |
 | — | Check that logs arrive and trigger a test alert | [04-validation.md](04-validation.md) | Done |
