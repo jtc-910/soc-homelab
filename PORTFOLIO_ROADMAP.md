@@ -180,10 +180,11 @@ analysis.
 - **Why it matters for SOC work:** SSH is the most common way into an internet-facing Linux server;
   without understanding the hardening basics, I wouldn't be able to make sense of the related alerts
   later.
-- **Status:** partly done — key-based SSH login is enforced (password login and root login
-  disabled) and Fail2ban is active on the SSH jail, tested by getting my own IP banned and
-  unbanning it again. UFW rules, disabling unnecessary services, and automatic security updates are
-  still open. See [`linux-lab/01-ssh-hardening.md`](linux-lab/01-ssh-hardening.md).
+- **Status:** done — key-based SSH login enforced (password and root login disabled), Fail2ban
+  active on the SSH jail (tested by getting my own IP banned and unbanning it again), UFW default-
+  deny with only the needed ports open to the lab subnet, unused services (ModemManager,
+  multipathd, udisks2) turned off, and automatic security updates confirmed working via a dry run.
+  See [`linux-lab/01-ssh-hardening.md`](linux-lab/01-ssh-hardening.md).
 
 ### 1.8 — Set up DHCP on DC01 (small, doubles as Network+ practice)
 - **Goal:** add the DHCP role to DC01, create a scope for the lab network, and set reservations for

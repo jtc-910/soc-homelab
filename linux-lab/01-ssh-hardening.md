@@ -1,9 +1,9 @@
-# Hardening the Wazuh Ubuntu VM — SSH and Fail2ban
+# Hardening the Wazuh Ubuntu VM
 
-The Wazuh VM had been running with password-based SSH login since I first set it up. This step
-locks that down: key-based login only, and Fail2ban to catch brute-force attempts against whatever
-is still exposed. UFW rules, turning off unnecessary services, and automatic security updates are
-the remaining part of Phase 1.7 and follow in a later update to this page.
+The Wazuh VM had been running with password-based SSH login, no firewall, and no automatic
+security updates since I first set it up. This page covers the full hardening pass: key-based SSH
+login only, Fail2ban against brute-force attempts, a UFW firewall restricted to the lab subnet,
+removing services the VM doesn't actually need, and automatic security updates.
 
 ## Why this matters
 
@@ -143,13 +143,117 @@ sudo fail2ban-client set sshd unbanip <my-mac-ip>
 
 ![My IP address removed from the ban list](../assets/screenshots/linux-lab-01-fail2ban-unbanned.png)
 
-## What's still open for 1.7
+## UFW firewall
 
-- Basic UFW firewall rules
-- Turning off unnecessary services
-- Automatic security updates
+First checked what was actually listening on the VM, to know what to allow:
 
-These will be added to this same page once done.
+```bash
+sudo ss -tulpn
+```
+
+Externally reachable: SSH (22), Wazuh agent events (1514), agent registration (1515), and the
+dashboard (443). The Wazuh API (55000) was also listening, but I'm not using it — only the
+dashboard — so I left it closed rather than opening a port I don't need. The indexer (9200, 9300)
+and DNS/chrony were already bound to `127.0.0.1` only, so they're unreachable from outside
+regardless of firewall rules.
+
+Default-deny incoming, and only the lab subnet (`192.168.100.0/24`) — not "anywhere" — gets access
+to the ports actually in use:
+
+```bash
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+sudo ufw allow from 192.168.100.0/24 to any port 22 proto tcp comment 'SSH'
+sudo ufw allow from 192.168.100.0/24 to any port 1514 proto tcp comment 'Wazuh agent events'
+sudo ufw allow from 192.168.100.0/24 to any port 1515 proto tcp comment 'Wazuh agent registration'
+sudo ufw allow from 192.168.100.0/24 to any port 443 proto tcp comment 'Wazuh dashboard'
+
+sudo ufw enable
+```
+
+Same rule as with `sshd_config` earlier: test in a separate session before trusting it, since a
+wrong UFW rule can lock you out just as easily as a bad SSH config.
+
+```bash
+sudo ufw status verbose
+```
+
+![ufw status verbose showing only the four needed ports open, restricted to the lab subnet](../assets/screenshots/linux-lab-01-ufw-status.png)
+
+Confirmed SSH still worked and both agents (DC01, WS01) still showed as active in the dashboard
+afterward — the firewall wasn't accidentally blocking the traffic it needed to allow.
+
+## Turning off unnecessary services
+
+```bash
+systemctl list-units --type=service --state=running
+```
+
+Most of what's running is either needed by Wazuh itself (`wazuh-manager`, `wazuh-indexer`,
+`wazuh-dashboard`, `filebeat`), or standard Ubuntu infrastructure (`ssh`, `cron`, `rsyslog`,
+`systemd-*`, `dbus`). Three services stood out as leftovers from the default server install that a
+VM without real hardware doesn't need:
+
+- `ModemManager` — for mobile broadband hardware, which a VM doesn't have
+- `multipathd` — for redundant storage paths on a SAN, not relevant here
+- `udisks2` — automatic mounting of removable media, not needed on a headless server
+
+I deliberately left `getty@tty1` and `serial-getty@ttyAMA0` running — those are what let me get
+back into the VM through the UTM console when Fail2ban locked me out over SSH further down this
+page, and losing that fallback access would be a bad trade for a marginal hardening gain.
+
+```bash
+sudo systemctl disable --now ModemManager.service
+sudo systemctl disable --now multipathd.service
+sudo systemctl disable --now udisks2.service
+
+systemctl list-units --type=service --state=failed
+```
+
+![no failed services after disabling the three unused ones](../assets/screenshots/linux-lab-01-services-disabled.png)
+
+Empty output — nothing broke.
+
+## Automatic security updates
+
+`unattended-upgrades` turned out to already be installed and running by default on this Ubuntu
+Server image, so this step was mostly about checking the configuration was actually doing the
+right thing rather than setting it up from scratch:
+
+```bash
+cat /etc/apt/apt.conf.d/20auto-upgrades
+cat /etc/apt/apt.conf.d/50unattended-upgrades
+```
+
+The allowed origins were already limited to `-security` (and the base release, which normally has
+no new packages), and automatic reboots were off by default — which matters, since an unannounced
+reboot in the middle of something would be its own kind of problem. I added a scheduled reboot
+window instead of leaving it fully off, so a kernel security patch that needs a restart doesn't
+just sit there indefinitely, but only happens at a predictable time:
+
+```bash
+sudo nano /etc/apt/apt.conf.d/50unattended-upgrades
+```
+
+```
+Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+Unattended-Upgrade::Automatic-Reboot "true";
+Unattended-Upgrade::Automatic-Reboot-Time "03:00";
+```
+
+Tested without actually changing anything:
+
+```bash
+sudo unattended-upgrade --dry-run --debug
+```
+
+![dry-run output showing only security-origin packages would be auto-installed, nothing pending right now](../assets/screenshots/linux-lab-01-unattended-upgrades-dryrun.png)
+
+The dry-run also confirmed the filtering is working correctly: a regular (non-security)
+`ubuntu-standard` update was available but explicitly skipped, since it wasn't coming from an
+allowed security origin. Only real security patches get installed unattended — everything else
+still needs a manual `apt upgrade`.
 
 ## Why this matters for SOC work
 

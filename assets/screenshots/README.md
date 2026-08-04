@@ -75,6 +75,12 @@ files from different areas don't collide just because they happen to share a ste
   attempts
 - `linux-lab-01-fail2ban-connection-refused.png` — a new SSH connection refused while banned
 - `linux-lab-01-fail2ban-unbanned.png` — the IP removed from the ban list again
+- `linux-lab-01-ufw-status.png` — `ufw status verbose`, only SSH/1514/1515/443 open, restricted to
+  the lab subnet
+- `linux-lab-01-services-disabled.png` — no failed services after disabling ModemManager,
+  multipathd, and udisks2
+- `linux-lab-01-unattended-upgrades-dryrun.png` — `unattended-upgrade --dry-run` confirming only
+  security-origin packages get installed automatically
 
 ## Still to add
 - Nothing outstanding right now.
