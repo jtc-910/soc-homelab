@@ -233,7 +233,10 @@ analysis.
 - **Deliverable:** `ad-lab/10-windows-firewall-acls.md`.
 - **Why it matters for SOC work:** reading and reasoning about firewall rules is a building block for
   the real pfSense work later (3.1) and for understanding firewall logs in general.
-- **Status:** open. Doesn't require any topology changes, unlike the real Phase 3 firewall work.
+- **Status:** mostly done. See [`ad-lab/10-windows-firewall-acls.md`](ad-lab/10-windows-firewall-acls.md)
+  — ICMP allow/block and rule-precedence tested (plus an unplanned but useful default-deny
+  discovery). The SMB-blocking half is still open — ran into a permissions snag testing it as a
+  non-admin account and paused rather than rushing it.
 
 ### 1.12 — Wireshark and tcpdump traffic analysis, pulled forward (small)
 - **Goal:** same as roadmap item 3.3 below — capture and analyze traffic (a plaintext login, a port

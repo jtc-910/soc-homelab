@@ -94,5 +94,11 @@ files from different areas don't collide just because they happen to share a ste
 - `ad-lab-09-split-horizon-internal.png` — nslookup from WS01 resolving portal.lab.local to the
   internal address via DNS Policies
 
+## ad-lab/10-windows-firewall-acls.md — Windows Firewall ACL warm-up
+- `ad-lab-10-icmp-allowed.png` — ping from DC01 succeeding after an explicit ICMP allow rule for
+  the Domain profile
+- `ad-lab-10-icmp-blocked.png` — ping failing again after adding an explicit block rule on top,
+  showing block overrides allow
+
 ## Still to add
-- Nothing outstanding right now.
+- SMB-blocking test for `ad-lab/10-windows-firewall-acls.md` (paused, needs an elevated session)

@@ -62,7 +62,8 @@ match the roadmap's phases: `ad-lab/` for on-prem Active Directory work, `siem-w
 | 1.8 | DHCP on DC01 | [ad-lab/07-dhcp.md](ad-lab/07-dhcp.md) | Done |
 | 1.9 | Network troubleshooting exercise | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Postponed (needs a dedicated segment, see Phase 3) |
 | 1.10 | DNS beyond the basics (record types, zone transfers, split-horizon) | [ad-lab/09-dns-deep-dive.md](ad-lab/09-dns-deep-dive.md) | Mostly done (external split-horizon test pending Kali VM) |
-| 1.11–1.12 | Small networking labs (firewall ACLs, Wireshark/tcpdump) — doubles as Network+ practice | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned |
+| 1.11 | Windows Firewall as an ACL warm-up | [ad-lab/10-windows-firewall-acls.md](ad-lab/10-windows-firewall-acls.md) | Mostly done (SMB-blocking part still open) |
+| 1.12 | Wireshark/tcpdump traffic analysis | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned |
 | 2.1, 2.5 | Install Wazuh, connect agents, add Sysmon | [siem-wazuh/01-wazuh-deployment.md](siem-wazuh/01-wazuh-deployment.md) | Done |
 | — | Check that logs arrive and trigger a test alert | [04-validation.md](04-validation.md) | Done |
 | 2.2 | Write-up: investigating a failed-logon alert | [incident-writeups/01-bruteforce.md](incident-writeups/01-bruteforce.md) | Done |
