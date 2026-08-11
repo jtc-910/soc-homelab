@@ -87,5 +87,12 @@ files from different areas don't collide just because they happen to share a ste
   (192.168.100.100–200)
 - `ad-lab-07-dhcp-lease.png` — an active lease for WS01 after temporarily switching it to DHCP
 
+## ad-lab/09-dns-deep-dive.md — DNS record types, zone transfers, split-horizon
+- `ad-lab-09-dns-records.png` — the DNS record list plus a successful nslookup against the new
+  CNAME
+- `ad-lab-09-zone-transfer-refused.png` — a zone transfer attempt against lab.local being refused
+- `ad-lab-09-split-horizon-internal.png` — nslookup from WS01 resolving portal.lab.local to the
+  internal address via DNS Policies
+
 ## Still to add
 - Nothing outstanding right now.

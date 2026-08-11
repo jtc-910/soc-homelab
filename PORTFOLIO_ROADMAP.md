@@ -206,8 +206,10 @@ analysis.
 - **Deliverable:** `ad-lab/08-network-troubleshooting.md`.
 - **Why it matters for SOC work:** a lot of "is this an attack or just broken config" triage starts
   with the same systematic troubleshooting instinct.
-- **Status:** open. I already have real troubleshooting stories in `99-troubleshooting.md` — this
-  would be a deliberately staged one, written up the same honest way.
+- **Status:** postponed. I already have real troubleshooting stories in `99-troubleshooting.md` —
+  this would be a deliberately staged one, written up the same honest way. Decided to hold off until
+  there's a dedicated network segment to break things in (see Phase 3), rather than staging a fault
+  on WS01 while it's still doing double duty as the main domain-joined client.
 
 ### 1.10 — DNS beyond the basics (small)
 - **Goal:** go past "DNS resolves names" into record types, zone transfers (and why they should be
@@ -217,7 +219,11 @@ analysis.
 - **Deliverable:** `ad-lab/09-dns-deep-dive.md`.
 - **Why it matters for SOC work:** DNS is one of the most abused protocols for both C2 and
   exfiltration — understanding it properly, not just "it resolves names", matters for detection.
-- **Status:** open.
+- **Status:** mostly done. See [`ad-lab/09-dns-deep-dive.md`](ad-lab/09-dns-deep-dive.md) — record
+  types (CNAME/MX/TXT), zone transfer restriction verified, split-horizon DNS built with DNS
+  Policies and zone scopes and verified from the internal side. The external side of split-horizon
+  still needs a client outside the lab subnet to test against — planned once the Kali VM (Phase 2)
+  exists.
 
 ### 1.11 — Windows Firewall rules as an ACL warm-up (small)
 - **Goal:** use the Windows Defender Firewall on DC01/WS01 to write ACL-style rules (block specific
