@@ -143,6 +143,20 @@ sudo fail2ban-client set sshd unbanip <my-mac-ip>
 
 ![My IP address removed from the ban list](../assets/screenshots/linux-lab-01-fail2ban-unbanned.png)
 
+### A limitation worth knowing: banning is IP-based, not identity-based
+
+Getting locked out raised an obvious question: could I have just gotten back in with a different IP
+address instead of going through the UTM console? Yes — Fail2ban bans the source IP address (via an
+iptables rule), not the device, the SSH key, or the user. If I'd given my Mac a second IP from the
+same lab subnet, I could have reconnected immediately, completely unaffected by the ban.
+
+That's a real limitation of IP-based banning in general, not just a lab quirk: it slows down a
+single attacker with a fixed IP, but does very little against anything that can rotate source
+addresses (a botnet, a VPN, or just someone requesting a new DHCP lease). Fail2ban is a delay
+mechanism on top of the actual fix, not the fix itself — the real protection here is that password
+authentication is off entirely, so even an attacker who avoids the ban has nothing to brute-force in
+the first place.
+
 ## UFW firewall
 
 First checked what was actually listening on the VM, to know what to allow:

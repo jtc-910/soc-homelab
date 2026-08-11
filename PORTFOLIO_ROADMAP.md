@@ -193,7 +193,9 @@ analysis.
 - **Deliverable:** `ad-lab/07-dhcp.md`.
 - **Why it matters for SOC work:** DHCP logs are a common source for tying an IP address back to a
   device at a point in time during an investigation.
-- **Status:** open. Doesn't touch the existing network topology, so it can be done any time.
+- **Status:** done. See [`ad-lab/07-dhcp.md`](ad-lab/07-dhcp.md) — DC01, WS01, and the Wazuh box
+  deliberately kept on their existing fixed IPs; the DHCP scope (192.168.100.100–200) is for future
+  transient clients instead.
 
 ### 1.9 — A deliberate network troubleshooting exercise (small, Network+ practice)
 - **Goal:** break something on purpose (wrong subnet mask, wrong default gateway, DNS pointed at the
@@ -227,15 +229,19 @@ analysis.
   the real pfSense work later (3.1) and for understanding firewall logs in general.
 - **Status:** open. Doesn't require any topology changes, unlike the real Phase 3 firewall work.
 
-### 1.12 — Wireshark traffic analysis, pulled forward (small)
+### 1.12 — Wireshark and tcpdump traffic analysis, pulled forward (small)
 - **Goal:** same as roadmap item 3.3 below — capture and analyze traffic (a plaintext login, a port
   scan) — but done now instead of waiting for Phase 3, since it only captures existing traffic and
-  doesn't require changing the network.
-- **Skills:** packet analysis, protocol understanding — a core Network+ topic.
+  doesn't require changing the network. Small lab, small analysis: capture on the Wazuh Linux box
+  with `tcpdump` first (the tool that's actually available on a server with no GUI), save it to a
+  `.pcap`, then open the same capture in Wireshark on my Mac for the deeper visual analysis.
+- **Skills:** packet analysis, protocol understanding, command-line vs. GUI capture tools — a core
+  Network+ topic.
 - **Deliverable:** `network/03-wireshark-analysis.md` (same deliverable as 3.3 — doing this early just
   means 3.3 is already done by the time Phase 3 starts).
 - **Why it matters for SOC work:** packet-capture analysis is a Tier-1/Tier-2 skill for
-  network-related alerts.
+  network-related alerts, and `tcpdump` is often the only capture tool available on a real
+  (headless) server — knowing both matters more than knowing just the GUI tool.
 - **Status:** open.
 
 ---
@@ -373,6 +379,20 @@ The layer that rounds out my identity-management profile.
   this forward instead of waiting for Phase 4.
 - **Status:** open.
 
+### 4.1b — Hybrid identity with Entra Connect (medium, high value)
+- **Goal:** sync DC01's on-prem AD to the Entra ID tenant from 4.1 with Entra Connect (or Entra
+  Connect Sync/Cloud Sync), so the lab becomes a real hybrid identity setup instead of two separate,
+  disconnected identity stores — which is what most companies in the DACH market actually run, not
+  a clean cloud-only tenant.
+- **Skills:** hybrid identity, directory synchronization, understanding what stays on-prem versus
+  what moves to the cloud in a hybrid model.
+- **Deliverable:** `cloud-iam/01b-hybrid-identity.md`.
+- **Why it matters for SOC work:** hybrid sync is where a lot of real-world identity attacks
+  actually live (e.g. attacking the sync account, or on-prem AD as the softer path into a hybrid
+  tenant) — and it's the setup most SOC analysts in this market will actually see, not a pure-cloud
+  environment.
+- **Status:** open. Needs 4.1 (Entra tenant) first, and reuses the existing DC01 from Phase 1.
+
 ### 4.2 — Conditional Access policies (medium)
 - **Goal:** build policies: require MFA, block logins from certain countries, require device
   compliance.
@@ -419,6 +439,22 @@ The layer that rounds out my identity-management profile.
 - **Deliverable:** `cloud-iam/07-intune.md`.
 - **Why it matters for SOC work:** device compliance is the gateway into Conditional Access.
 - **Status:** open.
+
+### 4.8 — Least privilege IAM architecture, bringing it together (medium, high value)
+- **Goal:** one document that ties the on-prem and cloud identity work into a single, coherent least
+  privilege architecture instead of leaving it as separate, disconnected pieces: the OU/group
+  structure and NTFS ACLs from 1.2/1.5 on the on-prem side, Conditional Access, MFA, and PIM
+  (4.2–4.4) on the cloud side. Includes a diagram showing how a user's access is actually
+  constrained end to end (group membership → NTFS/share permissions → Conditional Access →
+  time-limited privileged roles).
+- **Skills:** architectural thinking, IAM design, communicating a security model rather than just a
+  list of settings.
+- **Deliverable:** `cloud-iam/08-least-privilege-architecture.md` plus a diagram.
+- **Why it matters for SOC work:** interviews ask "how would you design least privilege here" far
+  more often than "how do you configure PIM" — this document is the answer to the first question,
+  built from things I actually did rather than theory.
+- **Status:** open. Depends on 1.2/1.5 (done) and 4.2–4.4 (open) being in place first, since it's a
+  synthesis of that work rather than a new hands-on step.
 
 ---
 

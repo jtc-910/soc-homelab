@@ -82,5 +82,10 @@ files from different areas don't collide just because they happen to share a ste
 - `linux-lab-01-unattended-upgrades-dryrun.png` — `unattended-upgrade --dry-run` confirming only
   security-origin packages get installed automatically
 
+## ad-lab/07-dhcp.md — DHCP on DC01
+- `ad-lab-07-dhcp-verify.png` — the DHCP console showing the active Lab-Network scope
+  (192.168.100.100–200)
+- `ad-lab-07-dhcp-lease.png` — an active lease for WS01 after temporarily switching it to DHCP
+
 ## Still to add
 - Nothing outstanding right now.
