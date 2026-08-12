@@ -335,6 +335,103 @@ This is where the repo shifts from a pure sysadmin profile toward a blue-team on
 
 ---
 
+## Phase 2b — Docker, case management, and Zero-Trust access (added 12.08.2026)
+
+This phase came out of thinking through what's actually missing from the portfolio so far: detection
+(Wazuh) without response (a case-management tool) only tells half the SOC story, and everything here
+is planned to run in Docker — a second platform alongside the existing UTM VMs, not a replacement for
+them. DC01 and WS01 stay full VMs on purpose: a domain controller and an endpoint I do threat hunting
+on need real OS behavior, not a container.
+
+### 2b.1 — Docker as a second platform alongside UTM (small)
+- **Goal:** get Docker running as the platform for everything else in this phase. Containers make
+  sense for the tooling that follows (Wazuh, TheHive, DVWA/Juice Shop, and later candidates like
+  Suricata or MISP all ship official Docker images) — but not for DC01 or WS01, which stay full VMs.
+- **Skills:** Docker basics, Docker Compose, judging what belongs in a container versus a full VM.
+- **Deliverable:** `docker-lab/01-docker-intro.md`.
+- **Why it matters for SOC work:** most modern security tooling ships as containers — knowing when
+  to containerize something and when not to is itself part of the skill, not just running
+  `docker-compose up`.
+- **Status:** open. First step of this phase, everything else here depends on it.
+
+### 2b.2 — Migrate Wazuh from a VM to Docker (large, high value)
+- **Goal:** migrate the existing Wazuh Ubuntu VM (192.168.100.30) to Docker containers, rather than
+  standing up a fresh instance — back up the config, custom rules, and data first, write an actual
+  cutover plan and a rollback plan, then do the migration for real.
+- **Skills:** service migration without data loss, Docker volumes versus VM-disk persistence, backup
+  and rollback planning under real constraints (this is a service I actually rely on, not a
+  throwaway lab VM).
+- **Deliverable:** `docker-lab/02-wazuh-migration.md`.
+- **Why it matters for SOC work:** migrating a live service without losing data or downtime is a real
+  sysadmin skill, and doing it to my own working SIEM instead of a disposable test instance raises
+  the stakes in a way that shows up in the write-up.
+- **Status:** open.
+
+### 2b.3 — DVWA and Juice Shop as Docker attack targets (small)
+- **Goal:** stand up DVWA and OWASP Juice Shop fresh in Docker (no migration, no prior instance) as
+  deliberately vulnerable targets for the planned WAF project (nginx + ModSecurity/OWASP CRS, or
+  pfSense as a WAF layer).
+- **Skills:** Docker Compose for multi-container setups, working with intentionally vulnerable apps
+  safely (isolated network segment only).
+- **Deliverable:** `docker-lab/03-dvwa-juiceshop.md`.
+- **Why it matters for SOC work:** gives Wazuh (and later Suricata) something realistic to detect
+  against, and sets up the future WAF project without needing a real, risky vulnerable target.
+- **Status:** open.
+
+### 2b.4 — TheHive and Cortex: closing the detection-to-response gap (medium-large, highest priority)
+- **Goal:** stand up TheHive (incident-response case management) and Cortex (analysis/enrichment
+  engine) in Docker, and wire Wazuh alerts into TheHive so they become actual cases instead of
+  disappearing into a dashboard once viewed.
+- **Skills:** case-management workflows, alert-to-case pipelines, SOAR-adjacent tooling.
+- **Deliverable:** `docker-lab/04-thehive-cortex.md`.
+- **Why it matters for SOC work:** Wazuh shows I can detect an alert; this shows I can work one —
+  triage, document, escalate — which is the actual Tier-1 job, not just watching a dashboard light
+  up.
+- **Status:** open — the single highest-priority next step in the whole roadmap right now.
+
+### 2b.5 — Twingate: Zero-Trust remote access (small-medium)
+- **Goal:** set up Twingate as a Zero-Trust remote-access overlay into the lab network instead of a
+  classic VPN — no port forwarding required. The free tier (5 users, 10 remote networks, permanently
+  free) is enough for a solo lab. The connector runs as a lightweight container/VM inside
+  `lab.local`.
+- **Skills:** Zero-Trust access-control concepts, a practical modern alternative to VPN.
+- **Deliverable:** `docker-lab/05-twingate.md`.
+- **Why it matters for SOC work:** Zero-Trust access is directly relevant to SC-200/Security+
+  material, and it also makes the lab itself genuinely reachable from outside going forward.
+- **Status:** open.
+
+### 2b.6 — Patch/update automation, picked up along the way (small, no dedicated time slot)
+- **Goal:** light automation for keeping the existing lab patched — DC01, WS01, Wazuh, and whatever's
+  now running in Docker. Deliberately not a dedicated Ansible learning track; more an organic
+  byproduct of doing the work, the same way Bash came from the TryHackMe/Wazuh material and
+  PowerShell came from SC-200/Sentinel.
+- **Skills:** whatever automation/scripting approach turns out to be the practical choice, picked up
+  incidentally rather than studied on its own.
+- **Deliverable:** folded into whichever `docker-lab/` page it naturally comes up in, rather than a
+  dedicated page of its own.
+- **Why it matters for SOC work:** shows automation as a practical habit that grows out of real
+  maintenance work, not a checkbox skill studied in isolation.
+- **Status:** open, ongoing, no fixed slot in the roadmap.
+
+### Explicitly out of scope for now: Kubernetes
+No Kubernetes work is planned as part of this phase or this repo for the time being — Docker Compose
+covers everything here. Possibly a "year 2" idea alongside an eventual OSCP path, but not scoped or
+scheduled.
+
+### Further Docker candidates (later, no fixed timing)
+A few more services came up as ideas while thinking this through — not scheduled yet, just noted so
+they don't get lost:
+- **Suricata or Zeek** — network-based IDS, complementing the host-based Wazuh detection already in
+  place. Possibly the Docker-based way to do roadmap item 3.4 instead of a dedicated VM — to be
+  decided when that item comes up.
+- **Portainer** — a Docker GUI, worth adding once several containers are actually running here.
+- **OpenVAS/Greenbone** — a vulnerability scanner, useful to run before the planned AD-pentest work
+  in Phase 2.
+- **MISP** — a threat-intel platform, more relevant once the lab is further into a SIEM-engineer-style
+  phase than it is right now.
+
+---
+
 ## Phase 3 — Network and perimeter (alongside Security+)
 
 This is where my existing CCNA knowledge shows up in the portfolio.

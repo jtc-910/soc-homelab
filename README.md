@@ -46,7 +46,8 @@ what's still open.
 
 Each step has its own page with the exact commands I ran and the problems I hit. Folders roughly
 match the roadmap's phases: `ad-lab/` for on-prem Active Directory work, `siem-wazuh/` for the SIEM,
-`incident-writeups/` for investigations.
+`incident-writeups/` for investigations, `linux-lab/` for the Linux hardening work, and `docker-lab/`
+(planned) for the Docker/TheHive/Twingate expansion below.
 
 | Step | What I did | Page | State |
 |---|---|---|---|
@@ -83,11 +84,16 @@ match the roadmap's phases: `ad-lab/` for on-prem Active Directory work, `siem-w
 See [`PORTFOLIO_ROADMAP.md`](PORTFOLIO_ROADMAP.md) for the full, phased plan. Short version:
 
 1. Core lab (this repo): domain controller, client, and Wazuh — done
-2. Finish the rest of Phase 1 (file-server ACLs, Linux hardening on the Wazuh box, plus a handful of
-   small networking-basics labs — DHCP, DNS internals, a troubleshooting exercise, Windows Firewall
-   ACLs, Wireshark — that double as practice for CompTIA Network+) — planned
-3. Attack the domain from Kali (Kerberoasting, Pass-the-Hash) and detect it in Wazuh — planned
-4. Networking (pfSense/OPNsense, segmentation), then cloud IAM (Entra, Intune, Sentinel) — planned
+2. Finish the rest of Phase 1 (mostly done — DHCP, DNS deep dive, and Windows Firewall ACLs are in;
+   Wireshark/tcpdump traffic analysis is still open, and the troubleshooting exercise was postponed
+   until there's a dedicated network segment to break things in)
+3. Docker as a second platform alongside the UTM VMs: migrate Wazuh into containers, add TheHive +
+   Cortex for case management (closing the detection-to-response gap), stand up DVWA/Juice Shop as
+   attack targets, and add Twingate for Zero-Trust remote access — planned, currently the
+   highest-priority next step
+4. Attack the domain from Kali (Kerberoasting, Pass-the-Hash) and detect it in Wazuh — planned
+5. Networking (pfSense/OPNsense, segmentation), then cloud IAM (Entra ID, hybrid identity, Intune,
+   Sentinel) — planned
 
 ---
 
