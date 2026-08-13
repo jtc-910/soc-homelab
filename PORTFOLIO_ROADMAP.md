@@ -251,7 +251,9 @@ analysis.
 - **Why it matters for SOC work:** packet-capture analysis is a Tier-1/Tier-2 skill for
   network-related alerts, and `tcpdump` is often the only capture tool available on a real
   (headless) server — knowing both matters more than knowing just the GUI tool.
-- **Status:** open.
+- **Status:** deliberately delayed until after Phase 2b (Docker). The Wazuh box will be running as a
+  container by then rather than a full VM, so it makes more sense to capture on and analyze the
+  post-migration setup instead of doing this twice.
 
 ---
 
