@@ -167,6 +167,48 @@ Rebooted the VM as a final end-to-end test, confirming the containers (which hav
 set) and Docker itself both come back automatically, without the native services fighting them for
 ports again.
 
+## Changing the default indexer password
+
+The official `docker-compose.yml` ships with a demo password (`SecretPassword`) for the `admin`
+indexer account — fine for getting the stack running, not fine to leave in place. Left the Wazuh API
+password (`wazuh-wui`) as-is for now, since that one isn't exposed anywhere I log in directly, and
+changed the indexer `admin` account, which is the actual dashboard login.
+
+OpenSearch stores its user passwords as hashes in `config/wazuh_indexer/internal_users.yml`, not as
+plaintext in the compose file, so changing it takes a few more steps than editing an environment
+variable:
+
+```bash
+docker compose down
+docker run --rm -ti wazuh/wazuh-indexer:4.14.7 bash /usr/share/wazuh-indexer/plugins/opensearch-security/tools/hash.sh
+```
+
+Entered the new password, copied the generated hash into the `admin:` block in
+`config/wazuh_indexer/internal_users.yml`, and updated the matching `INDEXER_PASSWORD` value in
+`docker-compose.yml` (both the manager and dashboard service definitions reference it).
+
+```bash
+docker compose up -d
+docker exec -it single-node-wazuh.indexer-1 bash
+```
+
+Inside the container, applied the updated user file to the running security index — this is the
+step that actually pushes the new hash into OpenSearch, editing the YAML file alone doesn't do
+anything on its own:
+
+```bash
+export INSTALLATION_DIR=/usr/share/wazuh-indexer
+export CONFIG_DIR=$INSTALLATION_DIR/config
+CACERT=$CONFIG_DIR/certs/root-ca.pem
+KEY=$CONFIG_DIR/certs/admin-key.pem
+CERT=$CONFIG_DIR/certs/admin.pem
+export JAVA_HOME=/usr/share/wazuh-indexer/jdk
+
+$INSTALLATION_DIR/plugins/opensearch-security/tools/securityadmin.sh -cd $CONFIG_DIR/opensearch-security -icl -nhnv -cacert $CACERT -cert $CERT -key $KEY
+```
+
+Logged into the dashboard afterward with the new password to confirm it took effect.
+
 ## Why this matters for SOC work
 
 This is what a real service migration actually looks like: back up the right things first, plan for
