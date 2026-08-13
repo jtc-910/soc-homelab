@@ -100,5 +100,8 @@ files from different areas don't collide just because they happen to share a ste
 - `ad-lab-10-icmp-blocked.png` — ping failing again after adding an explicit block rule on top,
   showing block overrides allow
 
+## docker-lab/01-docker-intro.md — Docker on docker01 (formerly the wazuh VM)
+- `docker-lab-01-hello-world.png` — `docker run hello-world` succeeding, plus the Compose version
+
 ## Still to add
 - SMB-blocking test for `ad-lab/10-windows-firewall-acls.md` (paused, needs an elevated session)

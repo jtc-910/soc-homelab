@@ -349,12 +349,18 @@ on need real OS behavior, not a container.
 - **Goal:** get Docker running as the platform for everything else in this phase. Containers make
   sense for the tooling that follows (Wazuh, TheHive, DVWA/Juice Shop, and later candidates like
   Suricata or MISP all ship official Docker images) — but not for DC01 or WS01, which stay full VMs.
+- **Host decision:** Docker runs directly on the existing Wazuh VM (`192.168.100.30`) rather than a
+  new dedicated VM — no extra RAM overhead for a whole separate machine, and it's where Wazuh itself
+  ends up living post-migration (2b.2) anyway. Every container from this phase (DVWA/Juice Shop,
+  TheHive/Cortex, the Twingate connector, and later candidates) runs on this same box.
 - **Skills:** Docker basics, Docker Compose, judging what belongs in a container versus a full VM.
 - **Deliverable:** `docker-lab/01-docker-intro.md`.
 - **Why it matters for SOC work:** most modern security tooling ships as containers — knowing when
   to containerize something and when not to is itself part of the skill, not just running
   `docker-compose up`.
-- **Status:** open. First step of this phase, everything else here depends on it.
+- **Status:** done. See [`docker-lab/01-docker-intro.md`](docker-lab/01-docker-intro.md) — the
+  former "wazuh" VM is now `docker01` (same IP, `192.168.100.30`), Docker Engine and Compose
+  installed and verified.
 
 ### 2b.2 — Migrate Wazuh from a VM to Docker (large, high value)
 - **Goal:** migrate the existing Wazuh Ubuntu VM (192.168.100.30) to Docker containers, rather than
@@ -623,6 +629,30 @@ This is the level of polish that sets a portfolio apart from other candidates.
 - **Why it matters for SOC work:** this is the centerpiece. One link that proves the full range of
   skills.
 - **Status:** open.
+
+---
+
+## Personal infrastructure ideas (not part of the portfolio, just noted so they don't get lost)
+
+These came up while thinking about Proxmox/LXC and aren't part of this lab or the portfolio — they're
+real home-network upgrades for later, once I have a dedicated mini PC. Keeping them here separately so
+"portfolio project for job applications" and "my actual home network" don't get mixed together.
+
+- **A mini PC running Proxmox as a bare-metal hypervisor.** Checked this against the current lab:
+  Proxmox VE 9.2 does have an official ARM64 ISO now (released 05.08.2026), but it needs an Armv9-A+
+  CPU with standard UEFI boot — my M1 Pro doesn't meet that, and Apple Silicon's non-standard boot
+  chain means a generic ARM64 server ISO wouldn't just boot on this Mac anyway (this is why the Asahi
+  Linux project needed years of custom bootloader work). So this needs actual separate hardware
+  (x86 mini PC, most likely), not something to try on the current Mac.
+- **Replace my actual home router with pfSense**, running on that same box.
+- **Pi-hole** as a network-wide DNS-level ad/tracker blocker, alongside pfSense.
+- **A self-hosted NAS/cloud** (e.g. TrueNAS or Nextcloud) for local file storage instead of relying on
+  third-party cloud storage.
+- **Once the mini PC exists, move the current lab VMs there instead of running them on the Mac.**
+  This would also solve a real, current problem: DC01 + WS01 + the Docker/Wazuh box running
+  simultaneously on the Mac's RAM is already tight. Dedicated hardware would remove that constraint
+  entirely, on top of being closer to how a real homelab is usually run (dedicated hardware, not a
+  laptop doing double duty).
 
 ---
 

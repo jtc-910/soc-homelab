@@ -35,7 +35,7 @@
         </mxCell>
 
         <!-- wazuh -->
-        <mxCell id="wazuh" value="wazuh&#10;Ubuntu Server&#10;Wazuh SIEM&#10;192.168.100.30" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4D6;strokeColor=#C55A11;fontColor=#833C00;" vertex="1" parent="1">
+        <mxCell id="wazuh" value="docker01&#10;Ubuntu Server&#10;Wazuh SIEM + Docker&#10;192.168.100.30" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4D6;strokeColor=#C55A11;fontColor=#833C00;" vertex="1" parent="1">
           <mxGeometry x="505" y="300" width="150" height="88" as="geometry" />
         </mxCell>
 

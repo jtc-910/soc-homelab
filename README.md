@@ -25,7 +25,7 @@ build the environment, produce real log data, and investigate it in a SIEM.
 |---|---|---|---|---|
 | Domain Controller | DC01 | Windows Server 2025 (ARM64) | 192.168.100.10 | 4 GB |
 | Client | WS01 | Windows 11 Pro (ARM64) | 192.168.100.20 | 4 GB |
-| SIEM | wazuh | Ubuntu Server (ARM64) | 192.168.100.30 | 4 GB |
+| SIEM / Docker host | docker01 (formerly "wazuh") | Ubuntu Server (ARM64) | 192.168.100.30 | 4 GB |
 | Attack machine (planned) | kali | Kali Linux (ARM64) | 192.168.100.40 | 2–3 GB |
 
 - Domain name: `lab.local` · Network: `192.168.100.0/24` · Virtualization software: UTM
@@ -47,7 +47,7 @@ what's still open.
 Each step has its own page with the exact commands I ran and the problems I hit. Folders roughly
 match the roadmap's phases: `ad-lab/` for on-prem Active Directory work, `siem-wazuh/` for the SIEM,
 `incident-writeups/` for investigations, `linux-lab/` for the Linux hardening work, and `docker-lab/`
-(planned) for the Docker/TheHive/Twingate expansion below.
+for the Docker/TheHive/Twingate expansion below.
 
 | Step | What I did | Page | State |
 |---|---|---|---|
@@ -68,6 +68,8 @@ match the roadmap's phases: `ad-lab/` for on-prem Active Directory work, `siem-w
 | 2.1, 2.5 | Install Wazuh, connect agents, add Sysmon | [siem-wazuh/01-wazuh-deployment.md](siem-wazuh/01-wazuh-deployment.md) | Done |
 | — | Check that logs arrive and trigger a test alert | [04-validation.md](04-validation.md) | Done |
 | 2.2 | Write-up: investigating a failed-logon alert | [incident-writeups/01-bruteforce.md](incident-writeups/01-bruteforce.md) | Done |
+| 2b.1 | Docker on the (renamed) Wazuh VM, now docker01 | [docker-lab/01-docker-intro.md](docker-lab/01-docker-intro.md) | Done |
+| 2b.2–2b.6 | Wazuh-to-Docker migration, DVWA/Juice Shop, TheHive+Cortex, Twingate | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned (TheHive+Cortex is next priority) |
 | Notes | Every problem I ran into and how I fixed it | [99-troubleshooting.md](99-troubleshooting.md) | Ongoing |
 
 ## What I learned to do here
