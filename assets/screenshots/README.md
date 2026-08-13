@@ -103,5 +103,13 @@ files from different areas don't collide just because they happen to share a ste
 ## docker-lab/01-docker-intro.md — Docker on docker01 (formerly the wazuh VM)
 - `docker-lab-01-hello-world.png` — `docker run hello-world` succeeding, plus the Compose version
 
+## docker-lab/02-wazuh-migration.md — migrating Wazuh from a native install to Docker
+- `docker-lab-02-containers-running.png` — all three Wazuh containers (manager, indexer, dashboard)
+  up and stable
+- `docker-lab-02-agents-active.png` — DC01 and WS01 both showing Active against the new Docker-based
+  manager, using their original client.keys
+- `docker-lab-02-dashboard-login.png` — the Wazuh dashboard reachable at https://192.168.100.30,
+  served from the container instead of the native install
+
 ## Still to add
 - SMB-blocking test for `ad-lab/10-windows-firewall-acls.md` (paused, needs an elevated session)

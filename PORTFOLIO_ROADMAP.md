@@ -251,9 +251,8 @@ analysis.
 - **Why it matters for SOC work:** packet-capture analysis is a Tier-1/Tier-2 skill for
   network-related alerts, and `tcpdump` is often the only capture tool available on a real
   (headless) server — knowing both matters more than knowing just the GUI tool.
-- **Status:** deliberately delayed until after Phase 2b (Docker). The Wazuh box will be running as a
-  container by then rather than a full VM, so it makes more sense to capture on and analyze the
-  post-migration setup instead of doing this twice.
+- **Status:** unblocked — Wazuh now runs as a Docker container on `docker01` (2b.2 done), so this can
+  capture and analyze the post-migration setup rather than doing it twice. Not started yet.
 
 ---
 
@@ -373,7 +372,11 @@ on need real OS behavior, not a container.
 - **Why it matters for SOC work:** migrating a live service without losing data or downtime is a real
   sysadmin skill, and doing it to my own working SIEM instead of a disposable test instance raises
   the stakes in a way that shows up in the write-up.
-- **Status:** open.
+- **Status:** done. See [`docker-lab/02-wazuh-migration.md`](docker-lab/02-wazuh-migration.md) —
+  manager, indexer, and dashboard now run as containers on `docker01`; both agents (DC01, WS01)
+  reconnected using their original `client.keys` with no re-enrollment; native services disabled
+  (not removed) as a rollback path. Old indexer event history was deliberately not migrated (a
+  documented trade-off, not an oversight).
 
 ### 2b.3 — DVWA and Juice Shop as Docker attack targets (small)
 - **Goal:** stand up DVWA and OWASP Juice Shop fresh in Docker (no migration, no prior instance) as
