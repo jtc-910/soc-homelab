@@ -1,4 +1,4 @@
- # Problems I ran into (and how I fixed them)
+# Problems I ran into (and how I fixed them)
 
 Running this lab on an Apple Silicon Mac meant a lot of small things worked differently than they
 would on a normal Intel PC. I'm keeping every problem and fix here — partly so I don't have to
@@ -111,3 +111,35 @@ Clear-DnsServerCache -Force ; ipconfig /flushdns
 
 After that, `nslookup lab.local` answered instantly with `192.168.100.10`. Turning on DNS scavenging
 keeps old records from piling up again.
+
+## After migrating Wazuh to Docker, the VM's disk kept filling up
+
+Disk usage on `docker01` was at 72% after the Docker migration, which seemed high for what should
+have been a fairly small addition. Tracked it down step by step: `docker system df` accounted for
+about 16.4 GB (expected, that's the Wazuh images and volumes), but `/var` alone was sitting at 35 GB
+— a big, unexplained gap.
+
+```bash
+sudo du -sh /var/* 2>/dev/null | sort -rh | head -10
+```
+
+`/var/ossec` (the native, now-disabled Wazuh manager) turned out to be 12 GB — even though the
+service itself was confirmed `inactive (dead)`. Drilling further:
+
+```bash
+sudo du -sh /var/ossec/queue/* 2>/dev/null | sort -rh | head -10
+```
+
+`/var/ossec/queue/vd` alone was 11 GB — the Vulnerability Detector's local CVE feed database (NVD,
+Ubuntu OVAL, and so on), left over from when the native manager was still running. It's just
+downloaded feed data, not configuration or agent state, and the Docker-based manager has its own
+completely separate copy of the same thing in its own volume — so this was pure dead weight from the
+migration, safe to remove:
+
+```bash
+sudo rm -rf /var/ossec/queue/vd/*
+```
+
+Lesson: after decommissioning a service, check what it left behind, not just whether it's still
+running. A service being `disabled` and `inactive` doesn't mean its old data isn't still sitting on
+disk — and vulnerability-feed databases in particular can be surprisingly large.
