@@ -111,5 +111,9 @@ files from different areas don't collide just because they happen to share a ste
 - `docker-lab-02-dashboard-login.png` — the Wazuh dashboard reachable at https://192.168.100.30,
   served from the container instead of the native install
 
+## docker-lab/03-dvwa-juiceshop.md — DVWA and Juice Shop as Docker attack targets
+- `docker-lab-03-dvwa-login.png` — DVWA login page at http://192.168.100.30:8080
+- `docker-lab-03-juiceshop-home.png` — Juice Shop home page at http://192.168.100.30:3000
+
 ## Still to add
 - SMB-blocking test for `ad-lab/10-windows-firewall-acls.md` (paused, needs an elevated session)

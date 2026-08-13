@@ -70,7 +70,8 @@ for the Docker/TheHive/Twingate expansion below.
 | 2.2 | Write-up: investigating a failed-logon alert | [incident-writeups/01-bruteforce.md](incident-writeups/01-bruteforce.md) | Done |
 | 2b.1 | Docker on the (renamed) Wazuh VM, now docker01 | [docker-lab/01-docker-intro.md](docker-lab/01-docker-intro.md) | Done |
 | 2b.2 | Migrate Wazuh (manager, indexer, dashboard) into Docker containers | [docker-lab/02-wazuh-migration.md](docker-lab/02-wazuh-migration.md) | Done |
-| 2b.3–2b.6 | DVWA/Juice Shop, TheHive+Cortex, Twingate | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned (TheHive+Cortex is next priority) |
+| 2b.3 | DVWA and Juice Shop as Docker attack targets | [docker-lab/03-dvwa-juiceshop.md](docker-lab/03-dvwa-juiceshop.md) | Done |
+| 2b.4–2b.6 | TheHive+Cortex, Twingate | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned (TheHive+Cortex is next priority) |
 | Notes | Every problem I ran into and how I fixed it | [99-troubleshooting.md](99-troubleshooting.md) | Ongoing |
 
 ## What I learned to do here
@@ -90,10 +91,10 @@ See [`PORTFOLIO_ROADMAP.md`](PORTFOLIO_ROADMAP.md) for the full, phased plan. Sh
 2. Finish the rest of Phase 1 (mostly done — DHCP, DNS deep dive, and Windows Firewall ACLs are in;
    Wireshark/tcpdump traffic analysis is still open, and the troubleshooting exercise was postponed
    until there's a dedicated network segment to break things in)
-3. Docker as a second platform alongside the UTM VMs — Wazuh now runs as containers on `docker01`
-   (done); still to come: TheHive + Cortex for case management (closing the detection-to-response
-   gap, currently the highest-priority next step), DVWA/Juice Shop as attack targets, and Twingate
-   for Zero-Trust remote access
+3. Docker as a second platform alongside the UTM VMs — Wazuh now runs as containers on `docker01`,
+   and DVWA/Juice Shop are up as attack targets (both done); still to come: TheHive + Cortex for case
+   management (closing the detection-to-response gap, currently the highest-priority next step), and
+   Twingate for Zero-Trust remote access
 4. Attack the domain from Kali (Kerberoasting, Pass-the-Hash) and detect it in Wazuh — planned
 5. Networking (pfSense/OPNsense, segmentation), then cloud IAM (Entra ID, hybrid identity, Intune,
    Sentinel) — planned

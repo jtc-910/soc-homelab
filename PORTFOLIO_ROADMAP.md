@@ -387,7 +387,9 @@ on need real OS behavior, not a container.
 - **Deliverable:** `docker-lab/03-dvwa-juiceshop.md`.
 - **Why it matters for SOC work:** gives Wazuh (and later Suricata) something realistic to detect
   against, and sets up the future WAF project without needing a real, risky vulnerable target.
-- **Status:** open.
+- **Status:** done. See [`docker-lab/03-dvwa-juiceshop.md`](docker-lab/03-dvwa-juiceshop.md) — both
+  running on `docker01` in their own isolated Docker network, separate from the Wazuh stack. DVWA
+  needed `binfmt`/QEMU emulation set up first (amd64-only image on an ARM64 host).
 
 ### 2b.4 — TheHive and Cortex: closing the detection-to-response gap (medium-large, highest priority)
 - **Goal:** stand up TheHive (incident-response case management) and Cortex (analysis/enrichment
