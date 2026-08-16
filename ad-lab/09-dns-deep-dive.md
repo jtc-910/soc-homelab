@@ -113,6 +113,56 @@ subnet, which doesn't exist until the Kali VM shows up in Phase 2. I'll come bac
 once there's a machine in a different subnet to test from, rather than claiming it works without
 having checked.
 
+### A real bug the internal test uncovered: policies apply to the whole zone, not just the record
+
+While finishing up other work later, WS01 suddenly couldn't resolve `dc01.lab.local` at all —
+`nslookup` came back `NXDOMAIN`, even though `ping` by IP worked fine and both DC01's and WS01's own
+DNS settings looked correct. `Get-Service DNS` and `Resolve-DnsName` on DC01 showed nothing wrong on
+the server side either — the DNS service itself was healthy.
+
+The actual cause was the query resolution policies set up above. They were written like this:
+
+```powershell
+Add-DnsServerQueryResolutionPolicy -Name "InternalPolicy" -Action ALLOW -ClientSubnet "eq,InternalSubnet" -ZoneScope "InternalScope,1" -ZoneName lab.local
+Add-DnsServerQueryResolutionPolicy -Name "ExternalPolicy" -Action ALLOW -ClientSubnet "eq,ExternalSubnet" -ZoneScope "ExternalScope,1" -ZoneName lab.local
+```
+
+Without an `-Fqdn` condition, a query resolution policy doesn't just apply to the one record I
+intended (`portal.lab.local`) — it applies to **every** query against the entire `lab.local` zone
+from a matching client subnet. Since `InternalScope` only ever had the one `portal` record added to
+it, every other name in the zone — including `dc01.lab.local` itself — was being resolved against a
+zone scope that had no record for it, producing NXDOMAIN for names that had worked fine right up
+until these policies existed.
+
+Confirmed it directly by checking what records actually existed in that scope:
+
+```powershell
+Get-DnsServerQueryResolutionPolicy -ZoneName lab.local
+Get-DnsServerResourceRecord -ZoneName lab.local -ZoneScope InternalScope
+```
+
+`InternalScope` only had the `portal` A record — exactly as expected, and exactly the problem.
+
+The fix: recreate both policies scoped down to the one name they were actually meant to affect, using
+`-Fqdn` to match only `portal.lab.local` instead of the whole zone:
+
+```powershell
+Remove-DnsServerQueryResolutionPolicy -Name "InternalPolicy" -ZoneName lab.local
+Remove-DnsServerQueryResolutionPolicy -Name "ExternalPolicy" -ZoneName lab.local
+
+Add-DnsServerQueryResolutionPolicy -Name "InternalPolicy" -Action ALLOW -ClientSubnet "eq,InternalSubnet" -Fqdn "eq,portal.lab.local" -ZoneScope "InternalScope,1" -ZoneName lab.local
+Add-DnsServerQueryResolutionPolicy -Name "ExternalPolicy" -Action ALLOW -ClientSubnet "eq,ExternalSubnet" -Fqdn "eq,portal.lab.local" -ZoneScope "ExternalScope,1" -ZoneName lab.local
+```
+
+After that, both `nslookup dc01.lab.local` and `nslookup portal.lab.local` resolved correctly from
+WS01 — the split-horizon behavior for `portal` stayed intact, and the rest of the zone stopped being
+affected by it.
+
+This is a real, easy-to-make mistake with DNS Policies specifically: a `-ZoneScope` condition without
+a matching `-Fqdn` condition silently widens the policy's blast radius to the entire zone instead of
+the one name it was written for. Worth remembering for anything DNS-policy-based going forward, not
+just this lab.
+
 ## Why this matters for SOC work
 
 DNS is one of the most abused protocols for both command-and-control and data exfiltration —
@@ -120,4 +170,8 @@ attackers hide traffic in DNS queries because it's rarely blocked and rarely ins
 Understanding what "normal" DNS traffic and configuration actually looks like (which record types
 should exist, that zone transfers should be refused, why the same name might legitimately resolve
 differently depending on where the query came from) is what makes it possible to recognize when DNS
-traffic looks wrong instead of just assuming "it's DNS, it's fine."
+traffic looks wrong instead of just assuming "it's DNS, it's fine." The policy bug above is its own
+lesson too: a scoping mistake in DNS configuration can silently break resolution for an entire zone
+instead of just the one record it was meant to affect — the same systematic troubleshooting instinct
+(check the actual configuration, don't just assume the service is broken) applies whether the root
+cause turns out to be an attack or, like here, a self-inflicted misconfiguration.

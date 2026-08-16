@@ -109,7 +109,7 @@ analysis.
   department groups (IT, Sales, Finance), and 12 test users created via
   [`ad-lab/scripts/create-users.ps1`](ad-lab/scripts/create-users.ps1).
 
-### 1.3 — Group policies: hardening and settings (medium) — partly done
+### 1.3 — Group policies: hardening and settings (medium) — done
 - **Goal:** several group policies: block USB storage, a password policy, force a screen lock,
   turn on PowerShell logging.
 - **Skills:** Group Policy, endpoint hardening, logging configuration.
@@ -117,10 +117,14 @@ analysis.
   and how I tested it.
 - **Why it matters for SOC work:** the PowerShell logging policy directly feeds detection — I'd be
   generating the exact logs I later hunt through.
-- **Status:** [`ad-lab/03-gpo-hardening.md`](ad-lab/03-gpo-hardening.md) — the audit-logging GPO is
-  done and verified (logon, account management, and process creation with command-line logging, with
-  a real 4688 event confirmed in Wazuh). USB blocking, the password policy, and the other settings
-  are still open.
+- **Status:** [`ad-lab/03-gpo-hardening.md`](ad-lab/03-gpo-hardening.md) — the audit-logging GPO
+  (logon, account management, process creation with command-line logging, verified via a real 4688
+  event in Wazuh), USB storage blocking (verified via registry and a live test), the machine
+  inactivity screen lock (verified live), PowerShell Script Block Logging (including finding and
+  fixing a real gap — the Wazuh Windows agent doesn't forward the PowerShell event channel by
+  default, verified via a real 4104 event afterward), and the default domain password policy
+  (verified via `Get-ADDefaultDomainPasswordPolicy`, with the intentional lab-only exception of
+  disabled account lockout documented) are all done and verified.
 
 ### 1.4 — Client join and least privilege (small) — done
 - **Goal:** join a Windows 11 client to the domain, and set up a standard user account without local
@@ -221,9 +225,11 @@ analysis.
   exfiltration — understanding it properly, not just "it resolves names", matters for detection.
 - **Status:** mostly done. See [`ad-lab/09-dns-deep-dive.md`](ad-lab/09-dns-deep-dive.md) — record
   types (CNAME/MX/TXT), zone transfer restriction verified, split-horizon DNS built with DNS
-  Policies and zone scopes and verified from the internal side. The external side of split-horizon
-  still needs a client outside the lab subnet to test against — planned once the Kali VM (Phase 2)
-  exists.
+  Policies and zone scopes and verified from the internal side — including a real bug found and
+  fixed along the way (a query resolution policy without an `-Fqdn` condition silently applied to
+  the whole zone instead of just the intended record, breaking `dc01.lab.local` resolution). The
+  external side of split-horizon is deliberately deferred to Phase 2 — needs a client outside the
+  lab subnet to test against, which means the Kali VM.
 
 ### 1.11 — Windows Firewall rules as an ACL warm-up (small)
 - **Goal:** use the Windows Defender Firewall on DC01/WS01 to write ACL-style rules (block specific
@@ -233,10 +239,10 @@ analysis.
 - **Deliverable:** `ad-lab/10-windows-firewall-acls.md`.
 - **Why it matters for SOC work:** reading and reasoning about firewall rules is a building block for
   the real pfSense work later (3.1) and for understanding firewall logs in general.
-- **Status:** mostly done. See [`ad-lab/10-windows-firewall-acls.md`](ad-lab/10-windows-firewall-acls.md)
-  — ICMP allow/block and rule-precedence tested (plus an unplanned but useful default-deny
-  discovery). The SMB-blocking half is still open — ran into a permissions snag testing it as a
-  non-admin account and paused rather than rushing it.
+- **Status:** done. See [`ad-lab/10-windows-firewall-acls.md`](ad-lab/10-windows-firewall-acls.md) —
+  ICMP allow/block and rule-precedence tested (plus an unplanned but useful default-deny discovery),
+  and outbound SMB blocking tested end to end (rule managed from an elevated session, access attempt
+  made from the deliberately non-admin `abauer` account, blocked and then restored).
 
 ### 1.12 — Wireshark and tcpdump traffic analysis, pulled forward (small)
 - **Goal:** same as roadmap item 3.3 below — capture and analyze traffic (a plaintext login, a port
@@ -391,7 +397,7 @@ on need real OS behavior, not a container.
   running on `docker01` in their own isolated Docker network, separate from the Wazuh stack. DVWA
   needed `binfmt`/QEMU emulation set up first (amd64-only image on an ARM64 host).
 
-### 2b.4 — TheHive and Cortex: closing the detection-to-response gap (medium-large, highest priority)
+### 2b.4 — TheHive and Cortex: closing the detection-to-response gap (medium-large, highest priority) — done
 - **Goal:** stand up TheHive (incident-response case management) and Cortex (analysis/enrichment
   engine) in Docker, and wire Wazuh alerts into TheHive so they become actual cases instead of
   disappearing into a dashboard once viewed.
@@ -400,7 +406,11 @@ on need real OS behavior, not a container.
 - **Why it matters for SOC work:** Wazuh shows I can detect an alert; this shows I can work one —
   triage, document, escalate — which is the actual Tier-1 job, not just watching a dashboard light
   up.
-- **Status:** open — the single highest-priority next step in the whole roadmap right now.
+- **Status:** done. See [`docker-lab/04-thehive-cortex.md`](docker-lab/04-thehive-cortex.md) — TheHive
+  + Cortex running in Docker (StrangeBee's `docker-thehive4` repo, testing profile), connected to
+  each other, and a full custom Wazuh integration built against `thehive4py` v2 (rewritten from
+  incompatible v1 code), tested both with an isolated synthetic alert and a real end-to-end
+  brute-force test against WS01 that produced a real TheHive alert from Wazuh rule 60204.
 
 ### 2b.5 — Twingate: Zero-Trust remote access (small-medium)
 - **Goal:** set up Twingate as a Zero-Trust remote-access overlay into the lab network instead of a

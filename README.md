@@ -62,8 +62,8 @@ for the Docker/TheHive/Twingate expansion below.
 | 1.7 | Harden the Wazuh Linux box (SSH, Fail2ban, UFW, services, auto-updates) | [linux-lab/01-ssh-hardening.md](linux-lab/01-ssh-hardening.md) | Done |
 | 1.8 | DHCP on DC01 | [ad-lab/07-dhcp.md](ad-lab/07-dhcp.md) | Done |
 | 1.9 | Network troubleshooting exercise | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Postponed (needs a dedicated segment, see Phase 3) |
-| 1.10 | DNS beyond the basics (record types, zone transfers, split-horizon) | [ad-lab/09-dns-deep-dive.md](ad-lab/09-dns-deep-dive.md) | Mostly done (external split-horizon test pending Kali VM) |
-| 1.11 | Windows Firewall as an ACL warm-up | [ad-lab/10-windows-firewall-acls.md](ad-lab/10-windows-firewall-acls.md) | Mostly done (SMB-blocking part still open) |
+| 1.10 | DNS beyond the basics (record types, zone transfers, split-horizon) | [ad-lab/09-dns-deep-dive.md](ad-lab/09-dns-deep-dive.md) | Mostly done (external split-horizon deliberately deferred to Phase 2, needs the Kali VM) |
+| 1.11 | Windows Firewall as an ACL warm-up | [ad-lab/10-windows-firewall-acls.md](ad-lab/10-windows-firewall-acls.md) | Done |
 | 1.12 | Wireshark/tcpdump traffic analysis | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Unblocked now that Wazuh runs as a container (2b.2 done) |
 | 2.1, 2.5 | Install Wazuh, connect agents, add Sysmon | [siem-wazuh/01-wazuh-deployment.md](siem-wazuh/01-wazuh-deployment.md) | Done |
 | — | Check that logs arrive and trigger a test alert | [04-validation.md](04-validation.md) | Done |
@@ -71,7 +71,8 @@ for the Docker/TheHive/Twingate expansion below.
 | 2b.1 | Docker on the (renamed) Wazuh VM, now docker01 | [docker-lab/01-docker-intro.md](docker-lab/01-docker-intro.md) | Done |
 | 2b.2 | Migrate Wazuh (manager, indexer, dashboard) into Docker containers | [docker-lab/02-wazuh-migration.md](docker-lab/02-wazuh-migration.md) | Done |
 | 2b.3 | DVWA and Juice Shop as Docker attack targets | [docker-lab/03-dvwa-juiceshop.md](docker-lab/03-dvwa-juiceshop.md) | Done |
-| 2b.4–2b.6 | TheHive+Cortex, Twingate | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned (TheHive+Cortex is next priority) |
+| 2b.4 | TheHive+Cortex: alert-to-case pipeline for Wazuh | [docker-lab/04-thehive-cortex.md](docker-lab/04-thehive-cortex.md) | Done |
+| 2b.5–2b.6 | Twingate, patch automation | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned |
 | Notes | Every problem I ran into and how I fixed it | [99-troubleshooting.md](99-troubleshooting.md) | Ongoing |
 
 ## What I learned to do here
@@ -92,9 +93,9 @@ See [`PORTFOLIO_ROADMAP.md`](PORTFOLIO_ROADMAP.md) for the full, phased plan. Sh
    Wireshark/tcpdump traffic analysis is still open, and the troubleshooting exercise was postponed
    until there's a dedicated network segment to break things in)
 3. Docker as a second platform alongside the UTM VMs — Wazuh now runs as containers on `docker01`,
-   and DVWA/Juice Shop are up as attack targets (both done); still to come: TheHive + Cortex for case
-   management (closing the detection-to-response gap, currently the highest-priority next step), and
-   Twingate for Zero-Trust remote access
+   DVWA/Juice Shop are up as attack targets, and TheHive + Cortex now turn Wazuh alerts into real,
+   working cases instead of a dashboard I only glance at (all done); still to come: Twingate for
+   Zero-Trust remote access
 4. Attack the domain from Kali (Kerberoasting, Pass-the-Hash) and detect it in Wazuh — planned
 5. Networking (pfSense/OPNsense, segmentation), then cloud IAM (Entra ID, hybrid identity, Intune,
    Sentinel) — planned

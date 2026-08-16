@@ -22,12 +22,19 @@ files from different areas don't collide just because they happen to share a ste
 - `ad-lab-01-svc-sql-spn.png` — the `svc-sql` account with its SPN (the target for a later attack)
 - `ad-lab-01-server-edition.png` — `Get-ComputerInfo` on DC01, confirming Windows Server 2025 Standard
 
-## ad-lab/03-gpo-hardening.md — audit-logging group policy
+## ad-lab/03-gpo-hardening.md — audit-logging group policy, USB blocking, screen lock, PowerShell logging, password policy
 - `ad-lab-03-gpo-created.png` — the new GPO in GPMC, linked to the domain
 - `ad-lab-03-audit-categories.png` — the three enabled audit categories in the GPO editor
 - `ad-lab-03-commandline-logging.png` — "include command line" setting turned on
 - `ad-lab-03-gpupdate-forced.png` — `gpupdate /force` applying the new policy
 - `ad-lab-03-process-creation-event.png` — a real 4688 event in Wazuh with the command line visible
+- `ad-lab-03-usb-block-registry.png` — registry check on WS01 confirming `Deny_All` is set to 1
+- `ad-lab-03-screenlock-registry.png` — registry check on WS01 confirming `InactivityTimeoutSecs` is
+  set to 900
+- `ad-lab-03-powershell-logging-wazuh-4104.png` — a real 4104 PowerShell Script Block Logging event
+  in Wazuh, after fixing the missing event-channel forwarding on the WS01 agent
+- `ad-lab-03-password-policy-verified.png` — `Get-ADDefaultDomainPasswordPolicy` output confirming
+  complexity, length, age, and history settings
 
 ## ad-lab/04-client-join-least-privilege.md — the client (WS01) and least privilege
 - `ad-lab-04-client-edition.png` — `winver` on WS01, confirming Windows 11 Pro
@@ -99,6 +106,8 @@ files from different areas don't collide just because they happen to share a ste
   the Domain profile
 - `ad-lab-10-icmp-blocked.png` — ping failing again after adding an explicit block rule on top,
   showing block overrides allow
+- `ad-lab-10-smb-blocked.png` — SMB access to `\\dc01\IT` blocked from the `abauer` session after an
+  outbound TCP/445 firewall rule, added and removed from a separate elevated session
 
 ## docker-lab/01-docker-intro.md — Docker on docker01 (formerly the wazuh VM)
 - `docker-lab-01-hello-world.png` — `docker run hello-world` succeeding, plus the Compose version
@@ -115,5 +124,14 @@ files from different areas don't collide just because they happen to share a ste
 - `docker-lab-03-dvwa-login.png` — DVWA login page at http://192.168.100.30:8080
 - `docker-lab-03-juiceshop-home.png` — Juice Shop home page at http://192.168.100.30:3000
 
-## Still to add
-- SMB-blocking test for `ad-lab/10-windows-firewall-acls.md` (paused, needs an elevated session)
+## docker-lab/04-thehive-cortex.md — TheHive + Cortex, and the Wazuh-to-TheHive integration
+- `docker-lab-04-ws01-failed-login.png` — WS01's login screen during the brute-force test, showing
+  Windows' own credential-guessing throttle message
+- `docker-lab-04-wazuh-rule-60204.png` — Wazuh Events filtered to `rule.id : 60204`, two hits from
+  WS01 at rule level 10 ("Multiple Windows Logon Failures")
+- `docker-lab-04-integrations-log-filtering.png` — `integrations.log` on the Wazuh manager showing
+  low-severity events explicitly skipped below the rule-level-6 threshold
+- `docker-lab-04-thehive-alert-detail.png` — the resulting TheHive alert detail view: rule 60204,
+  level 10, agent WS01, severity Medium
+- `docker-lab-04-thehive-alerts-list.png` — TheHive's Alerts overview, showing the full set of alerts
+  Wazuh has forwarded so far, including the two from this test

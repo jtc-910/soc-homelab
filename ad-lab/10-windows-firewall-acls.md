@@ -58,19 +58,54 @@ canceling out or the older rule winning.
 
 ![Ping from DC01 failing again after the explicit block rule, despite the allow rule still existing](../assets/screenshots/ad-lab-10-icmp-blocked.png)
 
-## SMB: still open
+## SMB: blocking outbound file-share access
 
-The plan for the second half of this exercise was to block outbound SMB (port 445) on WS01 and show
-that the firewall stops file-share access even though the NTFS permissions from `ad-lab/05-fileserver-acls.md`
-would otherwise allow it — a good illustration of the firewall as a control that sits in front of,
-and independent from, the ACL layer.
+The second half of this exercise: block outbound SMB (port 445) on WS01 and show that the firewall
+stops file-share access even though the NTFS permissions from `ad-lab/05-fileserver-acls.md` would
+otherwise allow it — a good illustration of the firewall as a control that sits in front of, and
+independent from, the ACL layer underneath it.
 
-Ran into a permissions issue while testing this: creating and removing firewall rules needs local
-administrator rights, and I was testing under `abauer` — the standard, deliberately non-admin
-domain account from the least-privilege test in `ad-lab/04-client-join-least-privilege.md`. The
-right approach is to run `New-NetFirewallRule`/`Remove-NetFirewallRule` from an elevated session and
-only use `abauer` for the actual access attempt, but I put this part on hold for now rather than
-finishing it in a rush. Will come back and add it here.
+First hit a permissions issue: creating and removing firewall rules needs local administrator rights,
+and I was testing under `abauer` — the standard, deliberately non-admin domain account from the
+least-privilege test in `ad-lab/04-client-join-least-privilege.md`. The fix isn't to give `abauer`
+more rights (that would defeat the point of the least-privilege setup), it's to split the two
+actions across two different sessions: manage the firewall rule as an elevated Administrator, and
+only use `abauer`'s own session for the actual access attempt being tested — the same separation of
+duties a real environment enforces between whoever manages firewall policy and whoever just uses the
+network.
+
+Confirmed baseline access first — `abauer` is a member of the `IT` group and can normally reach
+`\\dc01\IT` (same share used in `ad-lab/05-fileserver-acls.md`). Then, from an elevated
+Administrator session, added the block rule:
+
+```powershell
+New-NetFirewallRule -DisplayName "Block-SMB-Outbound" -Direction Outbound -Protocol TCP -RemotePort 445 -Profile Domain -Action Block
+```
+
+Back in the `abauer` session, the same share access that worked a moment ago now failed outright:
+
+```powershell
+dir \\dc01\IT
+```
+
+```
+dir : Das Netzwerkpfad wurde nicht gefunden.
+```
+
+![SMB access to \\dc01\IT blocked after the outbound TCP/445 firewall rule, tested from the abauer session](../assets/screenshots/ad-lab-10-smb-blocked.png)
+
+Removed the rule from the elevated session afterward and confirmed `abauer` could reach the share
+again, proving the block (and the fix) were both real, not just a stale cached failure:
+
+```powershell
+Remove-NetFirewallRule -DisplayName "Block-SMB-Outbound"
+```
+
+```powershell
+dir \\dc01\IT
+```
+
+Access worked again immediately.
 
 ## Why this matters for SOC work
 
@@ -78,4 +113,7 @@ Firewall logs and rule sets are a building block for the real pfSense work plann
 for reading firewall logs during an investigation in general. The unplanned ICMP troubleshooting
 also ended up being a good reminder by itself: "the rule I expected to be there might not be" is
 exactly the kind of assumption that causes real misconfigurations, and checking the actual rule
-state instead of trusting the documented default caught it here.
+state instead of trusting the documented default caught it here. The SMB test adds another real-world
+habit on top of that: testing a security control from the account that's actually restricted by it,
+not from an elevated account that would mask whether the control works at all, while keeping the
+actual policy changes confined to the elevated session that's allowed to make them.
