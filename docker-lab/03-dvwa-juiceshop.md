@@ -19,6 +19,8 @@ services:
     image: vulnerables/web-dvwa
     container_name: dvwa
     restart: unless-stopped
+    profiles:
+      - pentest
     ports:
       - "8080:80"
     networks:
@@ -28,6 +30,8 @@ services:
     image: bkimminich/juice-shop
     container_name: juice-shop
     restart: unless-stopped
+    profiles:
+      - pentest
     ports:
       - "3000:3000"
     networks:
@@ -39,8 +43,24 @@ networks:
 ```
 
 ```bash
-docker compose up -d
+docker compose --profile pentest up -d
 ```
+
+## Not running by default
+
+Both containers sit behind the `pentest` [Compose profile](https://docs.docker.com/compose/how-tos/profiles/).
+A plain `docker compose up -d` in this project directory ignores them entirely, so they don't come
+back on a host reboot or when I bring the rest of the lab up — most days I don't need attack targets
+running, just the Wazuh stack. To use them:
+
+```bash
+docker compose --profile pentest up -d      # start
+docker compose --profile pentest down       # stop and remove
+```
+
+`restart: unless-stopped` is still useful *within* a pentest session — if the VM reboots while I'm
+mid-exercise, they come back up rather than needing a manual restart — but it only takes effect once
+a container has actually been created via the profile; it doesn't override the profile filter itself.
 
 ## DVWA needed x86 emulation
 

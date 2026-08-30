@@ -1,0 +1,5 @@
+#!/bin/sh
+WPYTHON_BIN=/var/ossec/framework/python/bin/python3
+SCRIPT_PATH=/var/ossec/integrations/custom-w2thive.py
+
+exec ${WPYTHON_BIN} ${SCRIPT_PATH} "$@"

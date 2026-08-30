@@ -1,0 +1,13 @@
+<!--
+Der <integration>-Block aus /var/ossec/etc/ossec.conf auf dem Wazuh-Manager.
+Der reale API-Key steckt nur auf der Manager-Disk und lokal in
+~/HOMELAB/migration-export/ (nicht im Repo). Nach Neuaufbau von TheHive (neues
+Cassandra-Volume) muss ein neuer Key in der TheHive-UI erzeugt und hier
+eingetragen werden, siehe docker-lab/migration Phase D4.
+-->
+<integration>
+  <name>custom-w2thive</name>
+  <hook_url>https://<docker01-ip>:8443/thehive</hook_url>
+  <api_key><THEHIVE_API_KEY></api_key>
+  <alert_format>json</alert_format>
+</integration>
