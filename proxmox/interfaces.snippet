@@ -1,0 +1,36 @@
+# Append to /etc/network/interfaces on the Proxmox host. Reproduces UTM's "Shared
+# Network" behavior: lab VMs see each other, have internet via NAT, are invisible from
+# the home network. vmbr1 has NO physical port -- that's what makes it isolated.
+#
+# Gateway .15 -> .1: .15 was a UTM DHCP-range artifact, not a deliberate choice. .1
+# also fixes a latent bug -- DC01's DHCP scope (ad-lab/07-dhcp.md) already advertises
+# `-Router 192.168.100.1`, an address that didn't exist before this migration.
+#
+# Collision check done: home network is 192.168.178.0/24, this doesn't overlap it.
+#
+# eno1 below is a placeholder for whatever the i9's real home-network NIC is called
+# (check with `ip link` on first SSH login) -- rename before applying.
+
+auto vmbr0
+iface vmbr0 inet static
+    bridge-ports eno1
+    bridge-stp off
+    bridge-fd 0
+    # address/netmask/gateway for vmbr0 itself go here too, filled in during Phase C1
+    # once the host's real home-network IP is chosen (see Meilenstein 1 checklist).
+
+auto vmbr1
+iface vmbr1 inet static
+    address 192.168.100.1/24
+    bridge-ports none
+    bridge-stp off
+    bridge-fd 0
+    post-up   echo 1 > /proc/sys/net/ipv4/ip_forward
+    post-up   iptables -t nat -A POSTROUTING -s 192.168.100.0/24 -o vmbr0 -j MASQUERADE
+    post-down iptables -t nat -D POSTROUTING -s 192.168.100.0/24 -o vmbr0 -j MASQUERADE
+
+# If NAT breaks after this (ping 192.168.100.1 works, ping 1.1.1.1 doesn't): PVE 9's
+# nftables-based proxmox-firewall can conflict with hand-written iptables NAT rules.
+# Fallback: Datacenter -> SDN -> add a Zone of type "Simple" instead of this manual
+# bridge. Try the manual bridge first -- it's the more transparent, better-documented
+# path if it works cleanly.
