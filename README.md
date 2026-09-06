@@ -1,6 +1,6 @@
 # SOC Homelab — Active Directory and Wazuh SIEM
 
-This is a small security lab I built from scratch on my MacBook to learn the work of a
+This is a small security lab I built from scratch to learn the work of a
 SOC (Security Operations Center) analyst. It runs a Windows domain, a Windows client that joins
 that domain, and a Wazuh SIEM that collects the security logs from both machines. With that in
 place I can generate real attacks later and watch them show up as alerts.
@@ -8,32 +8,37 @@ place I can generate real attacks later and watch them show up as alerts.
 The idea is simple: instead of only collecting certificates, I want to show that I can actually
 build the environment, produce real log data, and investigate it in a SIEM.
 
-![Platform](https://img.shields.io/badge/platform-Apple%20Silicon%20ARM64-blue)
+Originally built as ARM64 VMs on a MacBook (see [00-lab-setup.md](00-lab-setup.md) for how that
+started); since migrated to bare-metal Proxmox VE on dedicated x86_64 hardware — see
+[docker-lab/05-hardware-migration.md](docker-lab/05-hardware-migration.md) for why and how.
+
+![Platform](https://img.shields.io/badge/platform-Proxmox%20VE%20x86__64-blue)
 ![SIEM](https://img.shields.io/badge/SIEM-Wazuh-orange)
 
 ---
 
 ## What's in the lab
 
-![Network diagram of the SOC homelab: internet through a UTM gateway into the 192.168.100.0/24 shared network, with DC01, WS01, wazuh, and a planned kali machine](assets/diagrams/network-diagram.svg)
+![Network diagram of the SOC homelab: an isolated 192.168.100.0/24 network behind a Proxmox NAT bridge, with DC01, WS01, docker01, and a planned kali machine](assets/diagrams/network-diagram.svg)
 
 *Editable source: [assets/diagrams/network-diagram.drawio](assets/diagrams/network-diagram.drawio) (open with [diagrams.net](https://app.diagrams.net) / the draw.io desktop app).*
 
 ## The machines
 
-| Role | Name | Operating system | IP address | RAM |
-|---|---|---|---|---|
-| Domain Controller | DC01 | Windows Server 2025 (ARM64) | 192.168.100.10 | 4 GB |
-| Client | WS01 | Windows 11 Pro (ARM64) | 192.168.100.20 | 4 GB |
-| SIEM / Docker host | docker01 (formerly "wazuh") | Ubuntu Server (ARM64) | 192.168.100.30 | 4 GB |
-| Attack machine (planned) | kali | Kali Linux (ARM64) | 192.168.100.40 | 2–3 GB |
+| Role | Name | Operating system | IP address | RAM | vCPU | Disk |
+|---|---|---|---|---|---|---|
+| Domain Controller | DC01 | Windows Server 2025 Standard (x86_64) | 192.168.100.10 | 6 GB | 4 | 80 GB |
+| Client | WS01 | Windows 11 Pro (x86_64) | 192.168.100.20 | 6 GB | 4 | 80 GB |
+| SIEM / Docker host | docker01 (formerly "wazuh") | Ubuntu Server 24.04 (x86_64) | 192.168.100.30 | 14 GB | 6 | 120 GB |
+| Attack machine (planned) | kali | Kali Linux (x86_64) | 192.168.100.40 | 4 GB | 4 | 60 GB |
 
-- Domain name: `lab.local` · Network: `192.168.100.0/24` · Virtualization software: UTM
-- My laptop is an Apple Silicon Mac (ARM), so every machine runs as an ARM64 virtual machine. That
-  turned out to matter a lot, because a few things that are easy on a normal Intel PC needed
-  workarounds here. I wrote all of those down in
-  [99-troubleshooting.md](99-troubleshooting.md) so someone else (or future me) doesn't
-  have to figure them out again.
+- Domain name: `lab.local` · Network: `192.168.100.0/24` (isolated, NAT'd) · Hypervisor: Proxmox VE
+  9.x on a dedicated Intel i9 host, bare metal
+- All three run comfortably at once now — the RAM ceiling that used to force one-VM-at-a-time on
+  the old laptop is gone. See
+  [docker-lab/05-hardware-migration.md](docker-lab/05-hardware-migration.md) for the move from
+  ARM64/UTM to this setup, and [99-troubleshooting.md](99-troubleshooting.md) for the historical
+  ARM-specific issues (kept for reference, not currently applicable).
 
 ## The full plan
 
@@ -51,7 +56,7 @@ for the Docker/TheHive/Twingate expansion below.
 
 | Step | What I did | Page | State |
 |---|---|---|---|
-| 0 | Get UTM and the install files ready | [00-lab-setup.md](00-lab-setup.md) | Done |
+| 0 | Get the install files ready (historical: originally UTM on a Mac) | [00-lab-setup.md](00-lab-setup.md) | Done |
 | 1.1 | Set up DC01, the domain controller | [ad-lab/01-domain-setup.md](ad-lab/01-domain-setup.md) | Done |
 | 1.2 | Users, groups, and OUs | [ad-lab/02-users-and-groups.md](ad-lab/02-users-and-groups.md) | Done |
 | 1.3 | Audit-logging group policy | [ad-lab/03-gpo-hardening.md](ad-lab/03-gpo-hardening.md) | Done |
@@ -61,10 +66,10 @@ for the Docker/TheHive/Twingate expansion below.
 | 1.6b | Patch management, for real: updating Wazuh itself | [siem-wazuh/02-patch-management.md](siem-wazuh/02-patch-management.md) | Done |
 | 1.7 | Harden the Wazuh Linux box (SSH, Fail2ban, UFW, services, auto-updates) | [linux-lab/01-ssh-hardening.md](linux-lab/01-ssh-hardening.md) | Done |
 | 1.8 | DHCP on DC01 | [ad-lab/07-dhcp.md](ad-lab/07-dhcp.md) | Done |
-| 1.9 | Network troubleshooting exercise | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Postponed (needs a dedicated segment, see Phase 3) |
-| 1.10 | DNS beyond the basics (record types, zone transfers, split-horizon) | [ad-lab/09-dns-deep-dive.md](ad-lab/09-dns-deep-dive.md) | Mostly done (external split-horizon deliberately deferred to Phase 2, needs the Kali VM) |
+| 1.9 | Network troubleshooting exercise | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Unblocked (Proxmox makes a throwaway segment + snapshot rollback trivial) |
+| 1.10 | DNS beyond the basics (record types, zone transfers, split-horizon) | [ad-lab/09-dns-deep-dive.md](ad-lab/09-dns-deep-dive.md) | Mostly done (external split-horizon needs the Kali VM — the VM shell exists on Proxmox, OS not installed yet) |
 | 1.11 | Windows Firewall as an ACL warm-up | [ad-lab/10-windows-firewall-acls.md](ad-lab/10-windows-firewall-acls.md) | Done |
-| 1.12 | Wireshark/tcpdump traffic analysis | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Unblocked now that Wazuh runs as a container (2b.2 done) |
+| 1.12 | Wireshark/tcpdump traffic analysis | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Unblocked (Wazuh runs as a container, 2b.2 done, and the hardware migration is also done) |
 | 2.1, 2.5 | Install Wazuh, connect agents, add Sysmon | [siem-wazuh/01-wazuh-deployment.md](siem-wazuh/01-wazuh-deployment.md) | Done |
 | — | Check that logs arrive and trigger a test alert | [04-validation.md](04-validation.md) | Done |
 | 2.2 | Write-up: investigating a failed-logon alert | [incident-writeups/01-bruteforce.md](incident-writeups/01-bruteforce.md) | Done |
@@ -73,6 +78,7 @@ for the Docker/TheHive/Twingate expansion below.
 | 2b.3 | DVWA and Juice Shop as Docker attack targets | [docker-lab/03-dvwa-juiceshop.md](docker-lab/03-dvwa-juiceshop.md) | Done |
 | 2b.4 | TheHive+Cortex: alert-to-case pipeline for Wazuh | [docker-lab/04-thehive-cortex.md](docker-lab/04-thehive-cortex.md) | Done |
 | 2b.5–2b.6 | Twingate, patch automation | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned |
+| — | Hardware migration: ARM64/UTM on a laptop → bare-metal Proxmox VE on dedicated x86_64 hardware | [docker-lab/05-hardware-migration.md](docker-lab/05-hardware-migration.md) | Done |
 | Notes | Every problem I ran into and how I fixed it | [99-troubleshooting.md](99-troubleshooting.md) | Ongoing |
 
 ## What I learned to do here
@@ -81,7 +87,7 @@ for the Docker/TheHive/Twingate expansion below.
 - **SIEM work:** install Wazuh, connect agents, add Sysmon, read events, investigate an alert
 - **Windows admin:** set things up with PowerShell, fixed IP addresses, roles and features
 - **Linux admin:** install Ubuntu Server, set the network, install software from the terminal
-- **Virtualization and networking:** run several VMs on a Mac and get them to talk to each other
+- **Virtualization and networking:** run several VMs on a hypervisor and get them to talk to each other
 - **Writing it down:** clear step-by-step notes, a diagram, and one proper investigation write-up
 
 ## What's next
@@ -92,7 +98,7 @@ See [`PORTFOLIO_ROADMAP.md`](PORTFOLIO_ROADMAP.md) for the full, phased plan. Sh
 2. Finish the rest of Phase 1 (mostly done — DHCP, DNS deep dive, and Windows Firewall ACLs are in;
    Wireshark/tcpdump traffic analysis is still open, and the troubleshooting exercise was postponed
    until there's a dedicated network segment to break things in)
-3. Docker as a second platform alongside the UTM VMs — Wazuh now runs as containers on `docker01`,
+3. Docker as a second platform alongside the other VMs — Wazuh now runs as containers on `docker01`,
    DVWA/Juice Shop are up as attack targets, and TheHive + Cortex now turn Wazuh alerts into real,
    working cases instead of a dashboard I only glance at (all done); still to come: Twingate for
    Zero-Trust remote access

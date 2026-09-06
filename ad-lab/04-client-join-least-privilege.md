@@ -1,5 +1,10 @@
 # Step 2 — WS01, the Windows client, and joining the domain
 
+> **Historical:** this page describes the original WS01 build on an ARM64 UTM VM. WS01 was later
+> rebuilt from scratch (not migrated) on Proxmox VE using the official x86_64 Windows 11 Pro ISO —
+> see [../docker-lab/05-hardware-migration.md](../docker-lab/05-hardware-migration.md). The values
+> here (gateway `.15`, ARM ISO) are kept for the historical record, not as current instructions.
+
 WS01 is a normal Windows 11 machine that acts like an employee's computer. Joining it to the domain
 means it now trusts DC01 for logins, and — more importantly for this lab — it becomes a source of
 security logs that Wazuh can collect.

@@ -1,5 +1,12 @@
 # Step 1 — DC01, the domain controller
 
+> **Historical:** this page describes the original DC01 build on an ARM64 UTM VM, including the
+> community-mirror ARM preview build noted below. DC01 was later rebuilt from scratch (not
+> migrated) on Proxmox VE using the official x86_64 Windows Server 2025 evaluation ISO — see
+> [../docker-lab/05-hardware-migration.md](../docker-lab/05-hardware-migration.md). The unofficial
+> ARM build is gone; the values here (gateway `.15`, ARM ISO) are kept as-is for the historical
+> record, not as current instructions.
+
 The domain controller is the heart of a Windows network. It holds the user accounts, decides who is
 allowed to log in, and runs DNS (the phone book that turns names like `dc01.lab.local` into IP
 addresses). Everything else in the lab depends on it, so I built it first.

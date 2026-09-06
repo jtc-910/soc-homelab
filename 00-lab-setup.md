@@ -1,5 +1,31 @@
 # Step 0 — Getting everything ready
 
+> **Historical, below the line:** everything from here down describes the *original* lab build on
+> a MacBook under UTM (ARM64 VMs). The lab has since moved to bare-metal Proxmox VE on dedicated
+> x86_64 hardware — see [docker-lab/05-hardware-migration.md](docker-lab/05-hardware-migration.md)
+> for why, and the **Current setup** section right below for how it's actually built today. The
+> ARM64/UTM content stays as-is for the record, not as current instructions.
+
+## Current setup (Proxmox VE)
+
+- Intel i9 desktop, 32 GB RAM, 1 TB SSD — Proxmox VE 9.x installed bare metal (not inside another
+  OS)
+- All VMs are official **x86_64** ISOs — no more ARM preview builds or emulation workarounds
+- Network: `vmbr1`, an isolated Linux bridge with no physical port, NAT'd to the internet through
+  `vmbr0`. Gateway is `192.168.100.1` (not `.15` — see below), no DHCP on the lab segment (DC01's
+  DHCP scope is the only one). Setup detail: [proxmox/interfaces.snippet](proxmox/interfaces.snippet)
+- Fixed IPs: DC01 `.10`, WS01 `.20`, docker01 `.30`, kali `.40` (planned) — all use gateway `.1`
+- VM creation is scripted, not clicked through: [proxmox/create-vms.sh](proxmox/create-vms.sh),
+  [proxmox/cloud-init-docker01.yaml](proxmox/cloud-init-docker01.yaml),
+  [ad-lab/scripts/autounattend-dc01.xml](ad-lab/scripts/autounattend-dc01.xml) /
+  [autounattend-ws01.xml](ad-lab/scripts/autounattend-ws01.xml)
+- All three VMs run comfortably at once now — the "two or three at a time" RAM ceiling below is
+  gone
+
+---
+
+## Historical: the original MacBook/UTM build
+
 Before building anything, I needed the virtualization software and the install files (ISOs) for
 each machine, plus a plan for how the network would work.
 
@@ -76,7 +102,7 @@ Addresses I use:
 
 DC01 first (it provides the domain and DNS everything else depends on), then WS01, then Wazuh.
 
-## The three VMs running in UTM
+## This is what it looked like, running in UTM (historical)
 
 ![UTM VM list showing DC01, WS01, and the Wazuh Ubuntu VM as QEMU machines](assets/screenshots/lab-setup-00-utm-vm-list.png)
 

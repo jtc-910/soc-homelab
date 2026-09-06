@@ -11,7 +11,7 @@
         </mxCell>
 
         <!-- Gateway -->
-        <mxCell id="gateway" value="Gateway (UTM Shared Network)&#10;192.168.100.15" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F2F2F2;strokeColor=#7F7F7F;" vertex="1" parent="1">
+        <mxCell id="gateway" value="Gateway (Proxmox vmbr1, NAT)&#10;192.168.100.1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F2F2F2;strokeColor=#7F7F7F;" vertex="1" parent="1">
           <mxGeometry x="320" y="112" width="260" height="42" as="geometry" />
         </mxCell>
 
@@ -20,7 +20,7 @@
         </mxCell>
 
         <!-- Host boundary -->
-        <mxCell id="host" value="MacBook Pro (M1 Pro) — UTM — all VMs on Shared Network 192.168.100.0/24" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=8;dashed=1;fillColor=#FAFAFA;strokeColor=#999999;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+        <mxCell id="host" value="Intel i9 — Proxmox VE (bare metal) — all VMs isolated on vmbr1 192.168.100.0/24" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=8;dashed=1;fillColor=#FAFAFA;strokeColor=#999999;fontStyle=1;fontSize=13;" vertex="1" parent="1">
           <mxGeometry x="50" y="188" width="800" height="470" as="geometry" />
         </mxCell>
 

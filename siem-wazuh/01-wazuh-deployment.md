@@ -1,5 +1,11 @@
 # Step 3 — Wazuh, the SIEM
 
+> **Historical:** this page describes the original native install on an ARM64 UTM VM. The lab has
+> since moved to bare-metal Proxmox VE, and Wazuh itself now runs as Docker containers on
+> `docker01` (see [../docker-lab/02-wazuh-migration.md](../docker-lab/02-wazuh-migration.md) and
+> [../docker-lab/05-hardware-migration.md](../docker-lab/05-hardware-migration.md)) rather than the
+> native `wazuh-install.sh` route below. Kept for the record; not the current provisioning path.
+
 A SIEM ("Security Information and Event Management") is the tool a SOC analyst spends most of the day
 in. It collects logs from many machines in one place, applies rules to them, and raises alerts when
 something looks suspicious. I'm using **Wazuh**, which is free and open-source.

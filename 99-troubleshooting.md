@@ -1,5 +1,11 @@
 # Problems I ran into (and how I fixed them)
 
+> **Note:** most of this page covers the original ARM64/UTM build on a MacBook. That environment
+> is gone — the lab now runs on bare-metal Proxmox VE (x86_64), see
+> [docker-lab/05-hardware-migration.md](docker-lab/05-hardware-migration.md) — so entries below
+> tagged **[ARM/UTM, historical]** no longer apply, but stay here since the debugging process is
+> still the point. New problems from the Proxmox/x86_64 environment get their own entries too.
+
 Running this lab on an Apple Silicon Mac meant a lot of small things worked differently than they
 would on a normal Intel PC. I'm keeping every problem and fix here — partly so I don't have to
 re-solve them, and partly because figuring these out is honestly a big part of the learning.
@@ -17,7 +23,7 @@ re-solve them, and partly because figuring these out is honestly a big part of t
 - Windows 11 has to be Pro to join a domain.
 - With 16 GB RAM, don't run every VM at once — shut down what you don't need.
 
-## Domain controller setup failed with error 0x8007000B
+## Domain controller setup failed with error 0x8007000B [ARM/UTM, historical]
 
 When I tried to turn DC01 into a domain controller, `Install-ADDSForest` failed with "An attempt was
 made to load a program with an incorrect format" (`0x8007000B`).
@@ -35,7 +41,7 @@ The fix was to start the real ARM64 PowerShell as Administrator
 the command again. It worked immediately. Lesson: on an ARM machine, check which PowerShell you're
 actually in before running low-level tools.
 
-## The Windows Server x64 installer wouldn't accept "no product key"
+## The Windows Server x64 installer wouldn't accept "no product key" [ARM/UTM, historical]
 
 Before switching to the ARM build, I tried the official Intel Server ISO through emulation. Its
 installer kept failing with "the product key couldn't be verified", even when I chose "I don't have
@@ -62,7 +68,7 @@ df -h /            # now ~37 GB
 Then I re-ran the installer. Best to fix this during the Ubuntu install itself (set the volume to max
 on the storage screen).
 
-## The big one: getting the machines to talk to each other
+## The big one: getting the machines to talk to each other [ARM/UTM, historical]
 
 This is what took me the longest. On this Mac, the different UTM network modes each only gave me half
 of what I needed:

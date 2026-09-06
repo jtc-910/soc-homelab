@@ -254,7 +254,11 @@ delimiters.)
 Lesson worth keeping: never edit a command destined for the terminal inside a rich-text app like
 Notes or TextEdit's default mode. It looks identical on screen right up until it silently isn't.
 
-### Running out of RAM
+### Running out of RAM [ARM/UTM, historical]
+
+> This RAM ceiling is gone: `docker01` now runs with 14 GB on Proxmox VE (up from 9.2 GiB), and
+> DC01/WS01/docker01 all run comfortably at once for the first time. See
+> [05-hardware-migration.md](05-hardware-migration.md).
 
 Copied the container back in and restarted, and the whole Wazuh manager came up broken — every core
 daemon down, the dashboard showing "API is down". `free -h` explained why: this stack (Wazuh manager

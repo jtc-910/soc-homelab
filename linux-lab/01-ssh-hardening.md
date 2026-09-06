@@ -1,5 +1,12 @@
 # Hardening the Wazuh Ubuntu VM
 
+> **Historical:** written against the original ARM64 UTM VM (hence `ttyAMA0` below — the ARM UART
+> device name; the x86_64 equivalent after the Proxmox migration is `ttyS0`, see
+> [../docker-lab/05-hardware-migration.md](../docker-lab/05-hardware-migration.md)). The hardening
+> steps described here (Fail2ban, UFW, key-only SSH, unattended-upgrades) still apply to the
+> rebuilt `docker01`; some are now set up via cloud-init instead of by hand — see
+> [../proxmox/cloud-init-docker01.yaml](../proxmox/cloud-init-docker01.yaml).
+
 The Wazuh VM had been running with password-based SSH login, no firewall, and no automatic
 security updates since I first set it up. This page covers the full hardening pass: key-based SSH
 login only, Fail2ban against brute-force attempts, a UFW firewall restricted to the lab subnet,

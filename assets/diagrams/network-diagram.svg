@@ -19,14 +19,14 @@
 
   <!-- Gateway -->
   <rect x="320" y="112" width="260" height="42" rx="6" fill="#F2F2F2" stroke="#7F7F7F" stroke-width="1.5"/>
-  <text x="450" y="130" text-anchor="middle" font-size="13" font-weight="bold" fill="#333333">Gateway (UTM Shared Network)</text>
-  <text x="450" y="146" text-anchor="middle" font-size="12" fill="#333333">192.168.100.15</text>
+  <text x="450" y="130" text-anchor="middle" font-size="13" font-weight="bold" fill="#333333">Gateway (Proxmox vmbr1, NAT)</text>
+  <text x="450" y="146" text-anchor="middle" font-size="12" fill="#333333">192.168.100.1</text>
 
   <line x1="450" y1="154" x2="450" y2="188" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
 
   <!-- Host boundary -->
   <rect x="50" y="188" width="800" height="470" rx="10" fill="#FAFAFA" stroke="#999999" stroke-width="1.5" stroke-dasharray="6,4"/>
-  <text x="70" y="212" font-size="13" font-weight="bold" fill="#555555">MacBook Pro (M1 Pro) — UTM — all VMs on Shared Network 192.168.100.0/24</text>
+  <text x="70" y="212" font-size="13" font-weight="bold" fill="#555555">Intel i9 — Proxmox VE (bare metal) — all VMs isolated on vmbr1 192.168.100.0/24</text>
 
   <!-- Bus line -->
   <line x1="130" y1="255" x2="790" y2="255" stroke="#7F7F7F" stroke-width="2"/>

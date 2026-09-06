@@ -62,7 +62,12 @@ docker compose --profile pentest down       # stop and remove
 mid-exercise, they come back up rather than needing a manual restart — but it only takes effect once
 a container has actually been created via the profile; it doesn't override the profile filter itself.
 
-## DVWA needed x86 emulation
+## DVWA needed x86 emulation [ARM/UTM, historical]
+
+> This whole section is a snapshot of a problem that no longer exists: `docker01` is now Ubuntu
+> x86_64 on Proxmox VE, so DVWA's amd64-only image runs natively with no emulation layer needed at
+> all. Kept for the record — see
+> [05-hardware-migration.md](05-hardware-migration.md).
 
 Juice Shop started cleanly — its image is multi-arch and runs natively on ARM64. DVWA didn't:
 

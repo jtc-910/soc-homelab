@@ -65,7 +65,9 @@ Goal of this phase: the lab exists, the repo is alive, and the first write-up is
 - **Deliverable:** `00-lab-setup.md` with a VM list, RAM/disk sizes, and the network layout.
 - **Why it matters for SOC work:** isolated analysis environments are the same idea as a malware
   sandbox.
-- **Status:** [`00-lab-setup.md`](00-lab-setup.md) — I used UTM instead of VirtualBox, same purpose.
+- **Status:** [`00-lab-setup.md`](00-lab-setup.md) — originally UTM instead of VirtualBox, same
+  purpose; since migrated to bare-metal Proxmox VE, see
+  [docker-lab/05-hardware-migration.md](docker-lab/05-hardware-migration.md).
 
 ### 0.3 — PowerShell basics (small, moved earlier)
 - **Goal:** get comfortable with PowerShell basics before building AD: variables, cmdlets, pipelines,
@@ -95,8 +97,11 @@ analysis.
 - **Deliverable:** `ad-lab/01-domain-setup.md` with screenshots of the working domain.
 - **Why it matters for SOC work:** Active Directory is the number one attack surface in most
   companies — I need to understand it from the inside.
-- **Status:** [`ad-lab/01-domain-setup.md`](ad-lab/01-domain-setup.md) — Windows Server 2025 (ARM),
-  domain `lab.local`, DNS is running, DHCP isn't (I'm using fixed IPs in the lab instead).
+- **Status:** [`ad-lab/01-domain-setup.md`](ad-lab/01-domain-setup.md) — originally Windows Server
+  2025 (ARM), domain `lab.local`, DNS running, DHCP not (fixed IPs used instead). DC01 was later
+  rebuilt on the official x86_64 ISO as part of the Proxmox migration — see
+  [docker-lab/05-hardware-migration.md](docker-lab/05-hardware-migration.md); DHCP is now running
+  too (see 1.8 below).
 
 ### 1.2 — Users, groups, and OUs (small) — done
 - **Goal:** a realistic org structure: OUs for departments, security groups, 10-15 test users created
@@ -170,7 +175,8 @@ analysis.
   SIEM losing agent connections mid-upgrade is its own incident. This proves the process, not just
   that a role can be installed.
 - **Status:** [`siem-wazuh/02-patch-management.md`](siem-wazuh/02-patch-management.md) — full VM clone
-  as a rollback point (UTM has no live snapshots), indexer backed up, upgraded in the correct order
+  as a rollback point (UTM had no live snapshots; Proxmox does, used for every phase gate since the
+  migration), indexer backed up, upgraded in the correct order
   (indexer → server → dashboard) with a cluster-health check in between, confirmed both agents still
   connected afterward.
 
@@ -210,10 +216,13 @@ analysis.
 - **Deliverable:** `ad-lab/08-network-troubleshooting.md`.
 - **Why it matters for SOC work:** a lot of "is this an attack or just broken config" triage starts
   with the same systematic troubleshooting instinct.
-- **Status:** postponed. I already have real troubleshooting stories in `99-troubleshooting.md` —
-  this would be a deliberately staged one, written up the same honest way. Decided to hold off until
-  there's a dedicated network segment to break things in (see Phase 3), rather than staging a fault
-  on WS01 while it's still doing double duty as the main domain-joined client.
+- **Status:** unblocked. I already have real troubleshooting stories in `99-troubleshooting.md` —
+  this would be a deliberately staged one, written up the same honest way. Was waiting for a
+  dedicated network segment to break things in without risking WS01's main job as the domain-joined
+  client — the Proxmox hardware migration
+  ([docker-lab/05-hardware-migration.md](docker-lab/05-hardware-migration.md)) makes that trivial
+  now: a throwaway VM on `vmbr1` plus a snapshot taken right before staging the fault means the
+  "break it" step is fully reversible. Not started yet.
 
 ### 1.10 — DNS beyond the basics (small)
 - **Goal:** go past "DNS resolves names" into record types, zone transfers (and why they should be
@@ -229,7 +238,8 @@ analysis.
   fixed along the way (a query resolution policy without an `-Fqdn` condition silently applied to
   the whole zone instead of just the intended record, breaking `dc01.lab.local` resolution). The
   external side of split-horizon is deliberately deferred to Phase 2 — needs a client outside the
-  lab subnet to test against, which means the Kali VM.
+  lab subnet to test against, which means the Kali VM. **Partially unblocked** by the Proxmox
+  migration: the Kali VM shell exists (VMID 130 on Proxmox), but the OS itself isn't installed yet.
 
 ### 1.11 — Windows Firewall rules as an ACL warm-up (small)
 - **Goal:** use the Windows Defender Firewall on DC01/WS01 to write ACL-style rules (block specific
@@ -257,8 +267,10 @@ analysis.
 - **Why it matters for SOC work:** packet-capture analysis is a Tier-1/Tier-2 skill for
   network-related alerts, and `tcpdump` is often the only capture tool available on a real
   (headless) server — knowing both matters more than knowing just the GUI tool.
-- **Status:** unblocked — Wazuh now runs as a Docker container on `docker01` (2b.2 done), so this can
-  capture and analyze the post-migration setup rather than doing it twice. Not started yet.
+- **Status:** unblocked — Wazuh now runs as a Docker container on `docker01` (2b.2 done), and the
+  hardware migration to Proxmox VE is also done
+  ([docker-lab/05-hardware-migration.md](docker-lab/05-hardware-migration.md)), so this can capture
+  and analyze the current setup rather than doing it twice. Not started yet.
 
 ---
 
@@ -346,11 +358,11 @@ This is where the repo shifts from a pure sysadmin profile toward a blue-team on
 
 This phase came out of thinking through what's actually missing from the portfolio so far: detection
 (Wazuh) without response (a case-management tool) only tells half the SOC story, and everything here
-is planned to run in Docker — a second platform alongside the existing UTM VMs, not a replacement for
+is planned to run in Docker — a second platform alongside the other VMs, not a replacement for
 them. DC01 and WS01 stay full VMs on purpose: a domain controller and an endpoint I do threat hunting
 on need real OS behavior, not a container.
 
-### 2b.1 — Docker as a second platform alongside UTM (small)
+### 2b.1 — Docker as a second platform alongside the other VMs (small)
 - **Goal:** get Docker running as the platform for everything else in this phase. Containers make
   sense for the tooling that follows (Wazuh, TheHive, DVWA/Juice Shop, and later candidates like
   Suricata or MISP all ship official Docker images) — but not for DC01 or WS01, which stay full VMs.
@@ -394,8 +406,10 @@ on need real OS behavior, not a container.
 - **Why it matters for SOC work:** gives Wazuh (and later Suricata) something realistic to detect
   against, and sets up the future WAF project without needing a real, risky vulnerable target.
 - **Status:** done. See [`docker-lab/03-dvwa-juiceshop.md`](docker-lab/03-dvwa-juiceshop.md) — both
-  running on `docker01` in their own isolated Docker network, separate from the Wazuh stack. DVWA
-  needed `binfmt`/QEMU emulation set up first (amd64-only image on an ARM64 host).
+  running on `docker01` in their own isolated Docker network, separate from the Wazuh stack.
+  Originally needed `binfmt`/QEMU emulation (amd64-only images on the old ARM64 host) — that
+  workaround is gone since the Proxmox migration to native x86_64
+  ([docker-lab/05-hardware-migration.md](docker-lab/05-hardware-migration.md)).
 
 ### 2b.4 — TheHive and Cortex: closing the detection-to-response gap (medium-large, highest priority) — done
 - **Goal:** stand up TheHive (incident-response case management) and Cortex (analysis/enrichment
@@ -647,27 +661,29 @@ This is the level of polish that sets a portfolio apart from other candidates.
 
 ---
 
+## Hardware migration — done, moved out of "personal infrastructure ideas"
+
+The bare-metal Proxmox move that used to live in the personal-infrastructure list below happened:
+an Intel i9 desktop now runs Proxmox VE 9.x bare metal, and the entire lab (DC01, WS01, docker01)
+was rebuilt there from official x86_64 ISOs. Full story, architecture decisions, and the real
+problems hit along the way: [docker-lab/05-hardware-migration.md](docker-lab/05-hardware-migration.md).
+This is genuinely portfolio material now (a real ARM→x86 hardware migration with data preserved),
+not just a home-network upgrade — hence moving it out of the "not part of the portfolio" list.
+This also solved the actual, then-current problem noted below: DC01 + WS01 + docker01 running
+simultaneously used to be tight on a 16 GB laptop; all three now run comfortably at once.
+
 ## Personal infrastructure ideas (not part of the portfolio, just noted so they don't get lost)
 
-These came up while thinking about Proxmox/LXC and aren't part of this lab or the portfolio — they're
-real home-network upgrades for later, once I have a dedicated mini PC. Keeping them here separately so
-"portfolio project for job applications" and "my actual home network" don't get mixed together.
+These aren't part of this lab or the portfolio — they're real home-network upgrades for later, now
+that the Proxmox box exists. Keeping them here separately so "portfolio project for job
+applications" and "my actual home network" don't get mixed together.
 
-- **A mini PC running Proxmox as a bare-metal hypervisor.** Checked this against the current lab:
-  Proxmox VE 9.2 does have an official ARM64 ISO now (released 05.08.2026), but it needs an Armv9-A+
-  CPU with standard UEFI boot — my M1 Pro doesn't meet that, and Apple Silicon's non-standard boot
-  chain means a generic ARM64 server ISO wouldn't just boot on this Mac anyway (this is why the Asahi
-  Linux project needed years of custom bootloader work). So this needs actual separate hardware
-  (x86 mini PC, most likely), not something to try on the current Mac.
-- **Replace my actual home router with pfSense**, running on that same box.
+- **Replace my actual home router with pfSense**, running on that same box. Deliberately kept off
+  the Proxmox host itself during the migration (coupling family internet uptime to lab
+  snapshot/rollback experiments is the wrong trade) — a separate project either way.
 - **Pi-hole** as a network-wide DNS-level ad/tracker blocker, alongside pfSense.
 - **A self-hosted NAS/cloud** (e.g. TrueNAS or Nextcloud) for local file storage instead of relying on
   third-party cloud storage.
-- **Once the mini PC exists, move the current lab VMs there instead of running them on the Mac.**
-  This would also solve a real, current problem: DC01 + WS01 + the Docker/Wazuh box running
-  simultaneously on the Mac's RAM is already tight. Dedicated hardware would remove that constraint
-  entirely, on top of being closer to how a real homelab is usually run (dedicated hardware, not a
-  laptop doing double duty).
 
 ---
 

@@ -124,6 +124,17 @@ files from different areas don't collide just because they happen to share a ste
 - `docker-lab-03-dvwa-login.png` — DVWA login page at http://192.168.100.30:8080
 - `docker-lab-03-juiceshop-home.png` — Juice Shop home page at http://192.168.100.30:3000
 
+## docker-lab/05-hardware-migration.md — ARM64/UTM → Proxmox VE (x86_64) — screenshots still needed
+- `hardware-migration-05-proxmox-vm-list.png` — the Proxmox web UI showing docker01/DC01/WS01/kali
+  as native x86_64 VMs (replaces the four `lab-setup-00-utm-*` screenshots below as the current
+  "what it looks like" reference)
+- `hardware-migration-05-snapshot-list.png` — the `phase-e-complete`/`phase-f-verified` snapshot
+  chain on one of the VMs, showing Proxmox's live-snapshot capability (UTM had none)
+- `hardware-migration-05-thehive-case.png` — the TheHive alert created by the post-migration
+  brute-force replay (rule 60204), proving the fixed integration end-to-end
+- Not yet captured — these are camera/UI screenshots that need the actual Proxmox web console, not
+  something scriptable from the Mac.
+
 ## docker-lab/04-thehive-cortex.md — TheHive + Cortex, and the Wazuh-to-TheHive integration
 - `docker-lab-04-ws01-failed-login.png` — WS01's login screen during the brute-force test, showing
   Windows' own credential-guessing throttle message
