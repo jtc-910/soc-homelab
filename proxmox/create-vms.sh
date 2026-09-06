@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Creates all lab VMs on the Proxmox host. Run on the host itself (as root), after
 # Phase C (network + storage) is done and the ISOs/cloud image are uploaded to local
-# storage. See "VM Migration/Homelab-Migration ....md" for the full sequencing.
+# storage. See migration/proxmox-migration-plan.md for the full sequencing.
 #
 # Assumes:
 #   - Storage `local` holds ISOs, `local-lvm` (or equivalent LVM-thin) holds VM disks

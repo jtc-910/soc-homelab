@@ -20,11 +20,13 @@ into an alert in the SIEM is the point of the whole lab. This step is that proof
    different trigger point). Each failed attempt is Windows event 4625, and each one showed up in
    Wazuh as an alert.
 5. **DNS still fine** — `nslookup lab.local` from WS01 answers with DC01's address.
-6. **The container stack is healthy** — `docker ps -a` across all three Compose projects
+6. **The GPO actually applied** — `Get-ItemProperty` on WS01 confirms `InactivityTimeoutSecs` is
+   `900`, the registry value behind the "Audit Policy - Lab" GPO's inactivity-lock setting.
+7. **The container stack is healthy** — `docker ps -a` across all three Compose projects
    (`wazuh-docker`, `docker/testing`, `pentest-lab`) shows every container `Up`, no restart loops,
    and `_cluster/health` on the indexer reports `"status":"green"`.
-7. **The alert actually reaches TheHive, not just the Wazuh dashboard** — this is the step the first
-   four checks above don't cover on their own. The failed-logon alerts (rule `60122`, level 5) are
+8. **The alert actually reaches TheHive, not just the Wazuh dashboard** — this is the step none of
+   the checks above cover on their own. The failed-logon alerts (rule `60122`, level 5) are
    deliberately *not* enough by themselves: `custom-w2thive.py`'s threshold only forwards level ≥ 6,
    so a single bad password never reaches TheHive — only the frequency-correlation rule (`60204`,
    "Multiple Windows Logon Failures", level 10, needs 8 failures inside 240s from the same source)

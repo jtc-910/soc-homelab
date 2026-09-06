@@ -2,7 +2,7 @@
 # Rebuilds the Wazuh + TheHive/Cortex/DVWA/Juice-Shop stack on the new docker01 VM from
 # the backup taken during the ARM->x86 migration (docker-lab/configs/, plus the
 # unredacted secrets/volume tarballs in ~/migration-export/, which must already be on
-# this machine -- see "VM Migration/Homelab-Migration ....md" phase C3).
+# this machine -- see migration/proxmox-migration-plan.md phase C3).
 #
 # Idempotent-ish: safe to re-run, but assumes ~/migration-export/ is present and the
 # target directories (~/wazuh-docker, ~/docker) don't already exist with conflicting

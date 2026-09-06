@@ -8,7 +8,9 @@ Elasticsearch, and the DVWA/Juice Shop targets on one VM pushed free memory into
 with DVWA itself stuck in an OOM crash loop (see the historical note in
 [04-thehive-cortex.md](04-thehive-cortex.md)). An Intel i9 desktop (32 GB RAM, multiple SSDs) took
 over: Proxmox VE installed bare metal, every VM rebuilt from official x86_64 ISOs on an isolated,
-NAT'd network segment.
+NAT'd network segment. Full planning document, including the architecture decisions and phased
+sequencing referenced throughout this page:
+[migration/proxmox-migration-plan.md](../migration/proxmox-migration-plan.md).
 
 ## Why Proxmox, and why rebuild instead of migrate
 
@@ -87,7 +89,7 @@ now baked into `cloud-init-docker01.yaml` so a fresh `docker01` gets it on first
 manual step. A second, unrelated DNS flakiness source (`systemd-resolved`'s stub listener hanging)
 is documented in the same file.
 
-## The fourth bug (and a fifth, real but fixable): found *after* declaring the migration done
+## The bug found after declaring the migration done — plus two things that only looked like bugs
 
 Phase E's brute-force replay had already passed once, on paper: 6 failed logons against
 `mmustermann` all showed up as Wazuh alerts (`rule.id 60122`, level 5). But the actual migration
@@ -130,7 +132,7 @@ through: `60204` fired, `custom-w2thive` picked it up, and a real alert (`source
 Wazuh alert ID) landed in TheHive — confirmed both in `integrations.log` and via a direct query
 against TheHive's own API, not just "the log looks happy."
 
-## A fifth bug, same root cause: volume-restored files can land on the wrong UID
+## One more, same root cause: volume-restored files can land on the wrong UID
 
 Separately, `local_rules.xml`/`local_decoder.xml` turned out owned by a stray `1000:1000` instead of
 `wazuh:wazuh` (UID 999) after the volume restore — same class of problem as the missing integration
@@ -153,8 +155,10 @@ details: [99-troubleshooting.md](../99-troubleshooting.md).
 | Agents | `agent_control -l` → DC01 and WS01 both `Active` |
 | **Alert → TheHive** | Brute-force replay (10× failed login, from an admin session on DC01) → rule `60204` (level 10) → `custom-w2thive` → alert confirmed via TheHive's own API |
 
-Snapshots (`phase-f-verified`) taken on all three VMs after this verification pass, on top of the
-`phase-e-complete` snapshots from the initial rebuild.
+Snapshots (`phase-f-verified`) taken on all three VMs after the verification checks above, on top of
+the `phase-e-complete` snapshots from the initial rebuild. **Caveat:** these snapshots predate the
+rules/decoders ownership fix below — rolling back to `phase-f-verified` brings the permission bug
+back with it; re-apply the `chown` from `restore-stacks.sh` after any rollback.
 
 ## What this means for the SOC-analyst angle
 
