@@ -13,7 +13,7 @@ users:
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
     ssh_authorized_keys:
-      # Replace with the Mac's actual public key before first boot
+      # Replace with the admin workstation's actual public key before first boot
       - ssh-ed25519 AAAA...REPLACE-ME... jonas@macbook
 
 package_update: true
@@ -24,10 +24,44 @@ packages:
   - docker-compose-v2
   - ufw
 
+# Network comes from Proxmox's own cloud-init integration (qm set --ipconfig0 in
+# create-vms.sh), not a hand-written netplan file. Confirmed on the running VM: the
+# virtio-net NIC still comes up as eth0 here (not the predictable ens18 name Ubuntu 24.04
+# uses on real/PCI hardware) -- Proxmox's NoCloud network-config targets it by MAC either way.
+
+write_files:
+  # virtio-net TX checksum offload corrupts UDP packets (notably DNS) behind Proxmox's
+  # NAT bridge (vmbr1) -- without this, apt/docker pull fail intermittently. ethtool
+  # settings don't survive a reboot, so this needs a real unit, not a one-shot runcmd.
+  # See docker01-network-fixes.md.
+  - path: /etc/systemd/system/disable-eth0-tx-offload.service
+    content: |
+      [Unit]
+      Description=Disable virtio-net tx checksum offload (works around UDP corruption behind Proxmox NAT bridge)
+      After=network-online.target
+      Wants=network-online.target
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/sbin/ethtool -K eth0 tx off
+      RemainAfterExit=yes
+
+      [Install]
+      WantedBy=multi-user.target
+    permissions: '0644'
+  - path: /etc/systemd/resolved.conf.d/99-static-dns.conf
+    content: |
+      [Resolve]
+      DNS=1.1.1.1 1.0.0.1
+      DNSStubListener=no
+    permissions: '0644'
+
 runcmd:
   # Claim the full disk (the cloud image otherwise only partitions half of it)
   - growpart /dev/sda 1
   - resize2fs /dev/sda1
+  - systemctl enable --now disable-eth0-tx-offload.service
+  - systemctl restart systemd-resolved
   # UFW: default deny incoming, but explicitly allow SSH + the ports the Wazuh/TheHive/
   # DVWA stacks publish. Docker's published ports insert iptables rules *before* UFW's
   # own chain, so this alone won't fully close Docker-published ports to the internet --
@@ -47,22 +81,5 @@ runcmd:
   - ufw allow 3000/tcp
   - ufw --force enable
   - systemctl enable --now docker
-  - netplan apply
-
-write_files:
-  - path: /etc/netplan/99-static.yaml
-    content: |
-      network:
-        version: 2
-        ethernets:
-          eth0:
-            dhcp4: false
-            addresses: [192.168.100.30/24]
-            routes:
-              - to: default
-                via: 192.168.100.1
-            nameservers:
-              addresses: [192.168.100.1, 1.1.1.1]
-    permissions: '0600'
 
 final_message: "docker01 cloud-init done. Next: docker-lab/scripts/restore-stacks.sh"

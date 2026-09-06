@@ -92,7 +92,7 @@
           <InstallFrom>
             <MetaData wcm:action="add">
               <Key>/IMAGE/NAME</Key>
-              <Value>Windows Server 2025 SERVERSTANDARD (Desktop Experience)</Value>
+              <Value>Windows Server 2025 SERVERSTANDARD</Value>
             </MetaData>
           </InstallFrom>
           <InstallTo>
