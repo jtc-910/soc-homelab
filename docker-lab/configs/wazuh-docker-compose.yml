@@ -1,8 +1,11 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 #
 # Redigierte Kopie von ~/wazuh-docker/single-node/docker-compose.yml auf docker01.
-# Alle Passwörter sind Platzhalter — die echten Werte liegen nur lokal in
-# ~/HOMELAB/migration-export/ (nicht im Repo, nicht committed).
+# Passwörter, die Jonas selbst gesetzt hat, sind Platzhalter — die echten Werte liegen
+# nur lokal in ~/HOMELAB/migration-export/ (nicht im Repo, nicht committed). Die einzige
+# Ausnahme ist DASHBOARD_PASSWORD unten: das ist Wazuhs eigener Upstream-Default für den
+# internen Dashboard<->Indexer-Service-Account (kein von Jonas gewähltes Secret), daher
+# unverändert aus dem offiziellen docker-compose.yml übernommen.
 services:
   wazuh.manager:
     image: wazuh/wazuh-manager:4.14.7

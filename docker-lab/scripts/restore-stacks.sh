@@ -57,11 +57,24 @@ sleep 20
 MANAGER_CID=$(docker compose ps -q wazuh.manager)
 
 log "Reinstalling thehive4py into the manager's Python env (not on a volume, lost on every recreate)"
-docker exec "$MANAGER_CID" /var/ossec/framework/python/bin/python3 -m pip install thehive4py==2.1.0
+docker exec "$MANAGER_CID" /var/ossec/framework/python/bin/python3 -m pip install thehive4py==2.0.3
 
 log "Re-applying ownership/permissions on the integration scripts (belt and suspenders after the volume restore)"
 docker exec "$MANAGER_CID" chown root:wazuh /var/ossec/integrations/custom-w2thive /var/ossec/integrations/custom-w2thive.py
 docker exec "$MANAGER_CID" chmod 750 /var/ossec/integrations/custom-w2thive /var/ossec/integrations/custom-w2thive.py
+
+# The wazuh_etc volume tarball is not guaranteed to carry the <integration> block --
+# confirmed once during the Proxmox migration that the restored ossec.conf had the
+# integration scripts but not the config block referencing them (wazuh-integratord
+# didn't even start). Check explicitly instead of trusting the volume restore silently.
+if ! docker exec "$MANAGER_CID" grep -q "custom-w2thive" /var/ossec/etc/ossec.conf; then
+    echo ""
+    echo "WARNING: the <integration> block for custom-w2thive is missing from ossec.conf"
+    echo "on the restored manager. Append it manually (see"
+    echo "docker-lab/configs/wazuh-manager/ossec.conf.integration-block.snippet) with the"
+    echo "real API key and docker01's IP, then: docker exec $MANAGER_CID /var/ossec/bin/wazuh-control restart"
+    echo ""
+fi
 
 # ---------------------------------------------------------------------------
 log "Cloning StrangeBee docker repo (TheHive/Cortex, 'testing' profile)"

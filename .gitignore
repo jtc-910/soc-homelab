@@ -2,8 +2,15 @@
 *passwords*.txt
 *.pem
 *.key
+client.keys
 secrets*
 wazuh-install-files.tar
+.env
+*.env
+migration-export/
+
+# Migration working notes -- not for readers, see migration/ for the committed writeup
+VM Migration/
 
 # OS junk
 .DS_Store
