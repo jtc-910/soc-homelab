@@ -149,3 +149,53 @@ sudo rm -rf /var/ossec/queue/vd/*
 Lesson: after decommissioning a service, check what it left behind, not just whether it's still
 running. A service being `disabled` and `inactive` doesn't mean its old data isn't still sitting on
 disk — and vulnerability-feed databases in particular can be surprisingly large.
+
+## Proxmox migration: virtio driver injection silently doesn't fire for Windows Server 2025
+
+`autounattend-dc01.xml`'s `DriverPaths` block is supposed to load the virtio-scsi/virtio-net
+drivers during Windows Setup so it can use `virtio-scsi-pci` instead of emulated SATA. It never
+did. `X:\windows\setupact.log` in the WinPE shell (reached via `qm sendkey <vmid> shift-f10` for a
+`cmd.exe`, no VNC/browser login needed) confirmed the answer file was found and marked "usable for
+pass [windowsPE]" — but the PnP/driver-injection step was never evaluated at all (zero hits for
+`pnp`/`vioscsi` in the log), and Setup silently fell back to the manual wizard with an empty disk
+list. The driver itself wasn't the problem: `drvload e:\vioscsi\2k25\amd64\vioscsi.inf` from that
+same WinPE shell loaded it manually without complaint, and the disk showed up right after in
+`wmic diskdrive`. It's specifically the automatic injection path that's broken. Not debugged
+further — SATA + `e1000` work natively with zero driver injection, and performance is irrelevant
+for a lab. Full context: [docker-lab/05-hardware-migration.md](docker-lab/05-hardware-migration.md).
+
+## Proxmox migration: the `specialize` pass never runs (open, worked around)
+
+Both `autounattend-dc01.xml` and `autounattend-ws01.xml` copy the provisioning scripts onto the
+disk during the `specialize` pass, so `FirstLogonCommands` can run them later without depending on
+the ISO's drive letter. The pass never ran on either VM — `C:\Provision` simply didn't exist,
+confirmed with `dir` in a live PowerShell session, even though the later `oobeSystem` pass
+(autologon, local admin) demonstrably did run. Worked around by manually finding the ISO by volume
+label (`Get-Volume` → label `AUTOUNATTEND`) and copying the scripts by hand before running
+`setup-dc01.ps1`/`setup-ws01.ps1`. There's a second, independent bug hiding behind the first even if
+it gets fixed: `%~dp0` is a batch-file token that doesn't reliably resolve inside an inline
+`cmd /c "..."` call, so the `xcopy` step would likely still come up empty. Left open — the clean
+fix is moving the copy logic into `FirstLogonCommands` (proven to run) instead of `specialize`.
+
+## Proxmox migration: virtio-net TX checksum offload corrupts UDP behind the NAT bridge
+
+`docker01` failed `apt`/`docker pull` intermittently with no obvious pattern after the move to
+Proxmox — just enough dropped UDP (DNS in particular) to make provisioning flaky. Cause: virtio-net's
+TX checksum offload computes the wrong checksum for UDP packets crossing Proxmox's NAT/masquerade
+path on the isolated `vmbr1` segment, and the kernel trusts it, so the packet gets dropped
+downstream. Fixed with a persistent systemd unit (a plain `ethtool -K eth0 tx off` doesn't survive a
+reboot) — see [proxmox/docker01-network-fixes.md](proxmox/docker01-network-fixes.md) for the unit
+file, now baked into `cloud-init-docker01.yaml` so a fresh VM gets it automatically.
+
+## Proxmox migration: volume-restored files can end up owned by the wrong UID
+
+After restoring the `wazuh_etc` named-volume tarball onto the new manager container, `local_rules.xml`
+and `local_decoder.xml` were owned by a stray `1000:1000` instead of `wazuh:wazuh` (UID 999) — the
+tarball restore preserves whatever UID/GID owned the files on the source, not what the target
+container expects. Wazuh doesn't fail loudly: `wazuh-analysisd` just logs
+`WARNING: (1103): Could not open file 'etc/rules/local_rules.xml' due to [(13)-(Permission denied)]`
+and carries on with its stock ruleset, so a genuinely custom detection would silently never fire.
+Fixed with `chown wazuh:wazuh` on both files plus a manager restart; `restore-stacks.sh` now does
+this automatically. Same root cause as the missing `<integration>` block documented in
+[docker-lab/05-hardware-migration.md](docker-lab/05-hardware-migration.md) — volume/tarball restores
+need their result verified explicitly, not assumed.

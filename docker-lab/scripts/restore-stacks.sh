@@ -63,6 +63,13 @@ log "Re-applying ownership/permissions on the integration scripts (belt and susp
 docker exec "$MANAGER_CID" chown root:wazuh /var/ossec/integrations/custom-w2thive /var/ossec/integrations/custom-w2thive.py
 docker exec "$MANAGER_CID" chmod 750 /var/ossec/integrations/custom-w2thive /var/ossec/integrations/custom-w2thive.py
 
+# Same root cause, different files: the volume restore preserves whatever UID/GID owned these on
+# the source (confirmed once as a stray 1000:1000 instead of wazuh:wazuh), which makes analysisd
+# silently ignore them ("Could not open file ... Permission denied") -- silent because Wazuh keeps
+# running fine on its stock rules either way, so this is easy to miss until a real custom rule
+# mysteriously never fires.
+docker exec "$MANAGER_CID" chown wazuh:wazuh /var/ossec/etc/rules/local_rules.xml /var/ossec/etc/decoders/local_decoder.xml
+
 # The wazuh_etc volume tarball is not guaranteed to carry the <integration> block --
 # confirmed once during the Proxmox migration that the restored ossec.conf had the
 # integration scripts but not the config block referencing them (wazuh-integratord

@@ -35,7 +35,7 @@ than a restored AD database anyway — it's the reproducible blueprint, not a fr
 
 Before touching any hardware, the repo held **zero** working configuration — no compose files, no
 `.env`, no rule XML, all of it living only on the old VM's disk. The migration plan treated this as
-the single biggest risk (Phase A wasn't "done" until it was redigited and committed). In hindsight,
+the single biggest risk (Phase A wasn't "done" until it was redacted and committed). In hindsight,
 that risk was overstated in one specific way: the Wazuh custom rules and decoders extracted from the
 old manager (now in [configs/wazuh-manager/](configs/wazuh-manager/)) turned out to be the
 **stock Wazuh templates**, not actual lab-specific detections — there was nothing there to lose.
@@ -87,12 +87,14 @@ now baked into `cloud-init-docker01.yaml` so a fresh `docker01` gets it on first
 manual step. A second, unrelated DNS flakiness source (`systemd-resolved`'s stub listener hanging)
 is documented in the same file.
 
-## The fourth bug: found *after* declaring the migration done
+## The fourth bug (and a fifth, real but fixable): found *after* declaring the migration done
 
 Phase E's brute-force replay had already passed once, on paper: 6 failed logons against
 `mmustermann` all showed up as Wazuh alerts (`rule.id 60122`, level 5). But the actual migration
-plan gate was stricter than that — **alert → TheHive case**, end to end — and re-checking it during
-this Phase F pass surfaced two things the first pass missed entirely:
+plan gate was stricter than that — **alert reaching TheHive**, end to end (not a *case*: promoting
+an alert to a case is a manual analyst step in TheHive, and the integration's service account only
+holds `manageAlert/create` permission by design) — and re-checking it during this Phase F pass
+surfaced two things the first pass missed entirely:
 
 - **The `<integration>` block referencing `custom-w2thive` was completely absent** from the
   restored manager's `ossec.conf` (0 matches). The integration *scripts* had been restored correctly
@@ -100,12 +102,18 @@ this Phase F pass surfaced two things the first pass missed entirely:
   hadn't made it across, and `wazuh-integratord` wasn't even running as a result. `restore-stacks.sh`
   had assumed the volume restore would carry this; it evidently didn't, at least not reliably enough
   to trust silently — the script now verifies explicitly and prints a loud warning if it's missing.
-- **`thehive4py` was missing from the interpreter the integration script actually uses.** Checking
-  the container's default `python3` said the module didn't exist; checking Wazuh's *own* bundled
-  interpreter (`/var/ossec/framework/python/bin/python3` — what `custom-w2thive.py`'s shebang
-  actually points at) told a different story. It's a documented fragility either way (`thehive4py`
-  lives on no volume and is lost on every container recreate), just not the failure that was
-  actually present here.
+- **A false lead that cost real debugging time:** checking `thehive4py` against the container's
+  default `python3` said the module didn't exist, which looked like a second bug. It wasn't — that's
+  the wrong interpreter. `custom-w2thive.py`'s shebang points at Wazuh's own bundled Python
+  (`/var/ossec/framework/python/bin/python3`), and `thehive4py` **was** installed there all along
+  (version `2.1.0`, from some earlier session — notably not a version PyPI even offers, its releases
+  stop at `2.0.3`, so it must have come from a non-PyPI source that wasn't recorded anywhere). Worth
+  keeping as a documented trap: on a Wazuh manager, always check the framework interpreter a script's
+  shebang actually names, not whatever `python3` resolves to in a shell. One unintended consequence
+  of chasing this lead: a `pip install thehive4py==2.0.3` aimed at "fixing" the false problem
+  downgraded the already-working `2.1.0` — confirmed harmless (`2.0.3` imports and runs the
+  integration correctly), but not something to repeat blindly next time; `thehive4py` lives on no
+  volume either way and is lost on every container recreate.
 - **A third thing, once the pipe was working, that isn't a bug:** `custom-w2thive.py` deliberately
   skips alerts below rule level 6 — a single failed login (level 5, rule `60122`) is meant to stay
   noise. The *correlation* rule, `60204` ("Multiple Windows Logon Failures", level 10, needs 8
@@ -113,13 +121,26 @@ this Phase F pass surfaced two things the first pass missed entirely:
   original 6-attempt replay never hit that threshold, so `60204` never fired — it just happened to
   go unnoticed because `60122` alone looked like a pass.
 
-Fixed by re-appending the integration block, reinstalling `thehive4py` (the pinned `2.1.0` isn't on
-PyPI at all — pinned to `2.0.3`, the latest available release, instead), restarting the manager
-(`wazuh-control restart` — the integrator daemon only reads `ossec.conf` at startup), and re-running
-the replay with 10 attempts instead of 6. Result, this time verified all the way through: `60204`
-fired, `custom-w2thive` picked it up, and a real alert (`sourceRef` matching the Wazuh alert ID)
-landed in TheHive — confirmed both in `integrations.log` and via a direct query against TheHive's own
-API, not just "the log looks happy."
+Fixed by re-appending the integration block, pinning `thehive4py` to `2.0.3` (the only concrete
+issue found — the stray `2.1.0` isn't on PyPI and its origin is unrecorded, so pinning to a real,
+known-good release is the more honest fix regardless of the false lead above), restarting the
+manager (`wazuh-control restart` — the integrator daemon only reads `ossec.conf` at startup), and
+re-running the replay with 10 attempts instead of 6. Result, this time verified all the way
+through: `60204` fired, `custom-w2thive` picked it up, and a real alert (`sourceRef` matching the
+Wazuh alert ID) landed in TheHive — confirmed both in `integrations.log` and via a direct query
+against TheHive's own API, not just "the log looks happy."
+
+## A fifth bug, same root cause: volume-restored files can land on the wrong UID
+
+Separately, `local_rules.xml`/`local_decoder.xml` turned out owned by a stray `1000:1000` instead of
+`wazuh:wazuh` (UID 999) after the volume restore — same class of problem as the missing integration
+block, different mechanism (tarball restore preserves the source's UID/GID literally). Wazuh doesn't
+fail loudly here either: `wazuh-analysisd` just logs a permission-denied warning and quietly falls
+back to its stock ruleset, so a genuinely custom detection would silently never fire. Today's
+`local_rules.xml`/`local_decoder.xml` only hold Wazuh's stock example content, so nothing was
+actually lost this time — but the mechanism is the real finding, not today's empty content. Fixed
+with `chown wazuh:wazuh` plus a restart; `restore-stacks.sh` now does this automatically. Full
+details: [99-troubleshooting.md](../99-troubleshooting.md).
 
 ## Verification
 
@@ -130,7 +151,7 @@ API, not just "the log looks happy."
 | DC01 | `Get-ADDomain` → `lab.local`; `(Get-ADUser -Filter *).Count` → 17; DHCP scope `.100`–`.200` active |
 | WS01 | `(Get-ComputerInfo).CsDomain` → `lab.local`; `nslookup lab.local` → `192.168.100.10` |
 | Agents | `agent_control -l` → DC01 and WS01 both `Active` |
-| **Alert → TheHive case** | Brute-force replay (10× failed login) → rule `60204` (level 10) → `custom-w2thive` → alert confirmed via TheHive's own API |
+| **Alert → TheHive** | Brute-force replay (10× failed login, from an admin session on DC01) → rule `60204` (level 10) → `custom-w2thive` → alert confirmed via TheHive's own API |
 
 Snapshots (`phase-f-verified`) taken on all three VMs after this verification pass, on top of the
 `phase-e-complete` snapshots from the initial rebuild.
