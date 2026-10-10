@@ -129,7 +129,9 @@ analysis.
   fixing a real gap — the Wazuh Windows agent doesn't forward the PowerShell event channel by
   default, verified via a real 4104 event afterward), and the default domain password policy
   (verified via `Get-ADDefaultDomainPasswordPolicy`, with the intentional lab-only exception of
-  disabled account lockout documented) are all done and verified.
+  disabled account lockout documented) are all done and verified. Re-verified on the rebuilt lab
+  2026-10-10, which turned up a real bug: the scripted GPO's audit settings weren't in effect (no
+  4688 events) until the audit client-side extension was registered. See the write-up.
 
 ### 1.4 — Client join and least privilege (small) — done
 - **Goal:** join a Windows 11 client to the domain, and set up a standard user account without local
@@ -152,7 +154,8 @@ analysis.
   the permission logic is a must.
 - **Status:** [`ad-lab/05-fileserver-acls.md`](ad-lab/05-fileserver-acls.md) — three department shares
   on DC01, wide-open share permissions with NTFS doing the actual restricting, tested and confirmed
-  with a real user (`abauer` gets into `IT`, denied from `Finance`).
+  with a real user (`abauer` gets into `IT`, denied from `Finance`). The shares didn't survive the
+  Proxmox rebuild. They were re-created on 2026-10-10 and are now part of `setup-dc01.ps1`.
 
 ### 1.6 — Patch management (WSUS, optional) (large) — skipped
 - **Goal:** set up the WSUS role, or at least document a patching strategy.
@@ -194,7 +197,9 @@ analysis.
   active on the SSH jail (tested by getting my own IP banned and unbanning it again), UFW default-
   deny with only the needed ports open to the lab subnet, unused services (ModemManager,
   multipathd, udisks2) turned off, and automatic security updates confirmed working via a dry run.
-  See [`linux-lab/01-ssh-hardening.md`](linux-lab/01-ssh-hardening.md).
+  See [`linux-lab/01-ssh-hardening.md`](linux-lab/01-ssh-hardening.md). Fail2ban, `PermitRootLogin no`,
+  the disabled services and the unattended-upgrades settings were missing on the rebuilt docker01.
+  They were re-applied on 2026-10-10 and are now baked into `proxmox/cloud-init-docker01.yaml`.
 
 ### 1.8 — Set up DHCP on DC01 (small, doubles as Network+ practice)
 - **Goal:** add the DHCP role to DC01, create a scope for the lab network, and set reservations for
@@ -240,6 +245,8 @@ analysis.
   external side of split-horizon is deliberately deferred to Phase 2 — needs a client outside the
   lab subnet to test against, which means the Kali VM. **Partially unblocked** by the Proxmox
   migration: the Kali VM shell exists (VMID 130 on Proxmox), but the OS itself isn't installed yet.
+  The records, zone-transfer setting and split-horizon policies didn't survive the Proxmox rebuild.
+  They were re-created on 2026-10-10 (with the `-Fqdn` fix built in) and are now part of `setup-dc01.ps1`.
 
 ### 1.11 — Windows Firewall rules as an ACL warm-up (small)
 - **Goal:** use the Windows Defender Firewall on DC01/WS01 to write ACL-style rules (block specific
@@ -640,14 +647,18 @@ This is the level of polish that sets a portfolio apart from other candidates.
   2.3.
 - **Status:** open.
 
-### 5.5 — Bash automation (small, closes out the Linux track)
+### 5.5 — Bash automation (small, closes out the Linux track) — done
 - **Goal:** one or two useful scripts — for example, summarizing failed SSH logins, a lab health
   check, or checking log rotation. The Linux equivalent of 5.2.
 - **Skills:** Bash scripting, automation, reporting.
 - **Deliverable:** `automation/` (same folder as 5.2) with Bash scripts plus a README for each.
 - **Why it matters for SOC work:** Bash is standard on Linux SIEM hosts and in a lot of detection
   pipelines — this rounds out the automation story across platforms.
-- **Status:** open.
+- **Status:** done. See [`automation/lab-healthcheck.sh`](automation/lab-healthcheck.sh) and its
+  [README](automation/README.md). It's a lab health check across the Proxmox host, docker01 and both
+  Windows machines (via the QEMU guest agent), about 100 checks, with an optional end-to-end
+  brute-force replay into TheHive. Its first run found several real regressions from the hardware
+  migration (see [`99-troubleshooting.md`](99-troubleshooting.md)).
 
 ### 5.6 — Capstone: end-to-end incident simulation (large, high value)
 - **Goal:** simulate a full attack chain (initial access, persistence, privilege escalation,

@@ -21,6 +21,18 @@
   [autounattend-ws01.xml](ad-lab/scripts/autounattend-ws01.xml)
 - All three VMs run comfortably at once now — the "two or three at a time" RAM ceiling below is
   gone
+- **Runs unattended after a host reboot:** all three VMs autostart in a fixed order — docker01
+  first (+120 s, the Wazuh manager has to be up before the agents try to connect), then DC01
+  (+90 s, AD/DNS before the client), then WS01. Verified with a cold host reboot and no manual steps.
+- **Backups:** a weekly `vzdump` job (`lab-weekly`, Sundays 02:00, snapshot mode, zstd, keep last
+  3) to a second SSD (`pve-backup`). Snapshots alone were never a backup, because they live on the
+  same disk as the VMs. 02:00 is deliberately before docker01's unattended-upgrades reboot window
+  at 03:00.
+- **QEMU guest agent** on DC01/WS01 (from the VirtIO guest tools). It gives clean shutdowns,
+  consistent backups, and `qm guest exec` for scripted checks, so nothing has to be typed into a
+  console via keyboard automation any more.
+- **Windows Server evaluation** on DC01 expires around **2027-02-28** (180 days from the
+  2026-09-01 install; `automation/lab-healthcheck.sh` warns when fewer than 30 days are left).
 
 ---
 

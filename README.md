@@ -79,6 +79,7 @@ for the Docker/TheHive/Twingate expansion below.
 | 2b.4 | TheHive+Cortex: alert-to-case pipeline for Wazuh | [docker-lab/04-thehive-cortex.md](docker-lab/04-thehive-cortex.md) | Done |
 | 2b.5–2b.6 | Twingate, patch automation | see [PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md) | Planned |
 | — | Hardware migration: ARM64/UTM on a laptop → bare-metal Proxmox VE on dedicated x86_64 hardware | [docker-lab/05-hardware-migration.md](docker-lab/05-hardware-migration.md) | Done |
+| 5.5 | Lab health check: ~100 checks across all hosts, cold-reboot acceptance test | [automation/README.md](automation/README.md) | Done |
 | Notes | Every problem I ran into and how I fixed it | [99-troubleshooting.md](99-troubleshooting.md) | Ongoing |
 
 ## What I learned to do here

@@ -41,6 +41,26 @@ into an alert in the SIEM is the point of the whole lab. This step is that proof
    made this fail silently right after the migration (a missing `<integration>` block and a missing
    Python dependency) and how they were diagnosed.
 
+## Re-checked as a script, after a cold reboot (2026-10-10)
+
+The checks above were done by hand, once. About a month after the migration I turned them into a
+repeatable script, [automation/lab-healthcheck.sh](automation/lab-healthcheck.sh), and extended it
+to everything the other write-ups claim (shares, DNS, GPO effect, Linux hardening, every web
+service, backups). The first full run found real gaps, all documented in
+[99-troubleshooting.md](99-troubleshooting.md#post-migration-audit-2026-10-10-things-that-looked-fine-and-werent).
+The most important one: the audit-policy GPO was applied but not in effect, so check 3's sibling
+(4688 process-creation events) had silently stopped working.
+
+The acceptance test for "the lab is actually finished" was then:
+
+1. Reboot the whole Proxmox host and **don't touch anything**. VM autostart brings up docker01,
+   DC01 and WS01 in order.
+2. Run `automation/lab-healthcheck.sh --attack`.
+3. Every check must pass, including the brute-force replay all the way to a TheHive alert queried
+   through TheHive's own API.
+
+Result: **101 of 101 checks passed** after the cold boot.
+
 ## When I considered this step done
 
 - The domain `lab.local` is up and WS01 is joined to it
@@ -50,6 +70,8 @@ into an alert in the SIEM is the point of the whole lab. This step is that proof
 - The alert-to-TheHive pipeline is proven, not assumed: a real TheHive alert exists for a real
   Wazuh alert, verified via the manager's integration log and TheHive's own API
 - Screenshots taken (see the [checklist](assets/screenshots/README.md))
+- The whole lab comes back from a cold host reboot on its own and passes the scripted health check
+  end to end
 
 ## How I write up an investigation
 

@@ -199,3 +199,41 @@ Fixed with `chown wazuh:wazuh` on both files plus a manager restart; `restore-st
 this automatically. Same root cause as the missing `<integration>` block documented in
 [docker-lab/05-hardware-migration.md](docker-lab/05-hardware-migration.md) — volume/tarball restores
 need their result verified explicitly, not assumed.
+
+## Post-migration audit (2026-10-10): things that looked fine and weren't
+
+A full end-to-end check of everything the write-ups call "done", run about a month after the
+migration. It's now a repeatable script: [automation/lab-healthcheck.sh](automation/lab-healthcheck.sh).
+What it turned up:
+
+- **Audit policy GPO applied, audit policy not in effect.** `gpresult` listed the GPO and
+  `audit.csv` was in SYSVOL, but `auditpol` showed Windows defaults, so there had been no 4688
+  events since the rebuild. The GPO was missing the Audit Policy Configuration client-side extension
+  in `gPCMachineExtensionNames` (GPMC adds it, a scripted file write doesn't). Details and fix:
+  [ad-lab/03-gpo-hardening.md](ad-lab/03-gpo-hardening.md).
+- **Things that never made it back onto the rebuilt VMs.** The department shares (1.5), the DNS
+  records, the zone-transfer setting and the split-horizon policies (1.10) only ever existed on the
+  old ARM DC01, and so did Fail2ban, `PermitRootLogin no`, the disabled services and the
+  unattended-upgrades reboot settings on docker01 (1.7). The rebuild scripts simply didn't contain
+  them. All of them are now re-applied live and added to
+  [setup-dc01.ps1](ad-lab/scripts/setup-dc01.ps1) and
+  [cloud-init-docker01.yaml](proxmox/cloud-init-docker01.yaml), so the next rebuild can't lose them
+  again. (`multipathd` also needs its `.socket` disabled, or socket activation brings it back.)
+- **DVWA `Up` but dead.** A stale Apache PID file in the container layer made the start script skip
+  Apache entirely. See [docker-lab/03-dvwa-juiceshop.md](docker-lab/03-dvwa-juiceshop.md).
+- **TheHive API key in plaintext in `integrations.log`.** `custom-w2thive.py` logged its whole
+  `argv`, and Wazuh passes the API key as `argv[2]`. It now logs `REDACTED` in that position, and the
+  existing log lines were scrubbed.
+- **`Deny_All` blocks CD/ISO drives too, for admins as well.** See
+  [ad-lab/03-gpo-hardening.md](ad-lab/03-gpo-hardening.md).
+- **Proxmox host:** no backup job at all (only snapshots, on the same disk as the VMs), no VM
+  autostart, install ISOs still attached, ~100 pending updates. Fail2ban's `[DEFAULT] ignoreip`
+  whitelisted the entire home LAN, which is the only network that can reach the web UI anyway, so
+  the new web-UI jail (`proxmox`, port 8006) carries its own narrow `ignoreip`.
+- **TheHive is noisy.** Windows Update drops binaries into `C:\Windows`, which trips Sysmon-based
+  rules 92217/92205/92206/92219 (level 6–12, the last one labelled "PrintNightmare"). That produced
+  about 150 TheHive alerts in a day, all false positives. Not tuned yet; it's an open item.
+
+A lesson that kept repeating: `docker ps` saying `Up`, `gpresult` saying "applied" and a config
+file being present are all claims about intent. Only checking the effect (an HTTP 200, the
+effective audit policy, an event that actually arrived) shows the real state.
