@@ -201,6 +201,83 @@ Machine Name,Policy Target,Subcategory,Subcategory GUID,Inclusion Setting,Exclus
         -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" `
         -ValueName "EnableScriptBlockLogging" -Type DWord -Value 1 | Out-Null
 
+    # Writing audit.csv alone is NOT enough: clients only process it if the GPO's AD object
+    # lists the "Audit Policy Configuration" client-side extension in gPCMachineExtensionNames.
+    # GPMC adds that automatically, a plain file write doesn't -- found 2026-10-10, when the
+    # rebuilt lab had no Process Creation auditing (no 4688 events) on either machine.
+    # Done after the Set-GPRegistryValue calls so the list stays sorted by CSE GUID
+    # (registry {35378EAC...} before audit {F3CCC681...}).
+    $gpoDN = "CN={$($gpo.Id)},CN=Policies,CN=System,$domainDN"
+    $auditCse = "[{F3CCC681-B74C-4060-9F26-CD84525DCA2A}{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}]"
+    $ext = (Get-ADObject $gpoDN -Properties gPCMachineExtensionNames).gPCMachineExtensionNames
+    if ($ext -notmatch "F3CCC681") {
+        Set-ADObject $gpoDN -Replace @{gPCMachineExtensionNames = "$ext$auditCse"}
+        # Bump the GPO version (AD + GPT.INI together) so clients reprocess it
+        Set-GPRegistryValue -Name $gpoName -Key "HKLM\System\CurrentControlSet\Control\Lsa" `
+            -ValueName "SCENoApplyLegacyAuditPolicy" -Type DWord -Value 1 | Out-Null
+    }
+
+    # --- Department shares (ad-lab/05-fileserver-acls.md) ----------------------
+    # Share permission wide open, NTFS does the real restricting: inheritance off,
+    # only the matching department group + Domain Admins.
+    Log "Creating department shares IT/Sales/Finance with NTFS ACLs"
+    foreach ($dept in "IT","Sales","Finance") {
+        $path = "C:\Shares\$dept"
+        New-Item -Path $path -ItemType Directory -Force | Out-Null
+        if (-not (Get-SmbShare -Name $dept -ErrorAction SilentlyContinue)) {
+            New-SmbShare -Name $dept -Path $path -FullAccess "Everyone" | Out-Null
+        }
+        $acl = Get-Acl $path
+        $acl.SetAccessRuleProtection($true, $false)
+        $acl.Access | ForEach-Object { $acl.RemoveAccessRule($_) | Out-Null }
+        $acl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule(
+            "$NetbiosName\$dept","Modify","ContainerInherit,ObjectInherit","None","Allow")))
+        $acl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule(
+            "$NetbiosName\Domain Admins","FullControl","ContainerInherit,ObjectInherit","None","Allow")))
+        Set-Acl $path $acl
+    }
+
+    # --- DNS beyond the basics (ad-lab/09-dns-deep-dive.md) ---------------------
+    Log "Adding CNAME/MX/TXT records"
+    $zone = $DomainName
+    if (-not (Get-DnsServerResourceRecord -ZoneName $zone -Name "fileserver" -RRType CName -ErrorAction SilentlyContinue)) {
+        Add-DnsServerResourceRecordCName -ZoneName $zone -Name "fileserver" -HostNameAlias "dc01.$DomainName"
+    }
+    if (-not (Get-DnsServerResourceRecord -ZoneName $zone -Name "@" -RRType MX -ErrorAction SilentlyContinue)) {
+        Add-DnsServerResourceRecordMX -ZoneName $zone -Name "@" -MailExchange "dc01.$DomainName" -Preference 10
+    }
+    if (-not (Get-DnsServerResourceRecord -ZoneName $zone -Name "@" -RRType Txt -ErrorAction SilentlyContinue)) {
+        Add-DnsServerResourceRecord -ZoneName $zone -Txt -Name "@" -DescriptiveText "v=spf1 -all"
+    }
+
+    # Zone transfers only to servers listed in the zone's NS records (= nobody here).
+    Set-DnsServerPrimaryZone -Name $zone -SecureSecondaries TransferToZoneNameServer
+
+    # Split-horizon for portal.lab.local. The -Fqdn condition is mandatory: without it the
+    # policies apply to the WHOLE zone and every other name resolves NXDOMAIN (see 09-dns-deep-dive.md).
+    Log "Creating split-horizon zone scopes + policies for portal.$DomainName"
+    foreach ($scope in @(@{Name="InternalScope"; IP="192.168.100.20"}, @{Name="ExternalScope"; IP="203.0.113.50"})) {
+        if (-not (Get-DnsServerZoneScope -ZoneName $zone -Name $scope.Name -ErrorAction SilentlyContinue)) {
+            Add-DnsServerZoneScope -ZoneName $zone -Name $scope.Name
+        }
+        if (-not (Get-DnsServerResourceRecord -ZoneName $zone -ZoneScope $scope.Name -Name "portal" -ErrorAction SilentlyContinue)) {
+            Add-DnsServerResourceRecord -ZoneName $zone -A -Name "portal" -IPv4Address $scope.IP -ZoneScope $scope.Name
+        }
+    }
+    if (-not (Get-DnsServerClientSubnet -Name "InternalSubnet" -ErrorAction SilentlyContinue)) {
+        Add-DnsServerClientSubnet -Name "InternalSubnet" -IPv4Subnet "192.168.100.0/24"
+    }
+    if (-not (Get-DnsServerClientSubnet -Name "ExternalSubnet" -ErrorAction SilentlyContinue)) {
+        Add-DnsServerClientSubnet -Name "ExternalSubnet" -IPv4Subnet "0.0.0.0/0"
+    }
+    foreach ($p in @(@{Name="InternalPolicy"; Subnet="InternalSubnet"; Scope="InternalScope"},
+                     @{Name="ExternalPolicy"; Subnet="ExternalSubnet"; Scope="ExternalScope"})) {
+        if (-not (Get-DnsServerQueryResolutionPolicy -ZoneName $zone -Name $p.Name -ErrorAction SilentlyContinue)) {
+            Add-DnsServerQueryResolutionPolicy -Name $p.Name -Action ALLOW -ZoneName $zone `
+                -ClientSubnet "eq,$($p.Subnet)" -Fqdn "eq,portal.$DomainName" -ZoneScope "$($p.Scope),1"
+        }
+    }
+
     # --- DHCP ------------------------------------------------------------------
     Log "Installing DHCP role and authorizing in AD"
     Install-WindowsFeature -Name DHCP -IncludeManagementTools | Out-Null

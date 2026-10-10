@@ -51,6 +51,47 @@ data.win.system.eventID : "4688"
 
 ![A 4688 process-creation event in Wazuh, with the command line visible](../assets/screenshots/ad-lab-03-process-creation-event.png)
 
+### After the Proxmox rebuild: the GPO applied, but its audit policy didn't (found 2026-10-10)
+
+The original GPO was built by hand in the Group Policy Management Console. On the rebuilt lab,
+[`setup-dc01.ps1`](scripts/setup-dc01.ps1) creates it from code instead: it writes the three audit
+subcategories straight into the GPO's `audit.csv` in SYSVOL, the same format `auditpol /backup`
+produces. `gpresult` on both machines listed "Audit Policy - Lab" as applied, and the file was
+there with the right content. Even so, `auditpol /get` showed:
+
+```
+Process Creation           No Auditing
+User Account Management    Success
+```
+
+Those are just the Windows defaults (`Logon` is audited for Success and Failure out of the box,
+which is why the brute-force test kept working and nobody noticed). In practice the lab had produced
+**no 4688 events at all** since the rebuild.
+
+The cause: a Windows client only runs a GPO's *Audit Policy Configuration* client-side extension
+if the GPO's AD object lists it in `gPCMachineExtensionNames`. GPMC adds that entry automatically
+when you edit the setting in the GUI. Writing `audit.csv` directly doesn't, so the client never
+even reads the file. The GPO only listed the registry extension (`{35378EAC-…}`), which it got from
+the `Set-GPRegistryValue` calls.
+
+```powershell
+$dn = "CN={<gpo-guid>},CN=Policies,CN=System,DC=lab,DC=local"
+(Get-ADObject $dn -Properties gPCMachineExtensionNames).gPCMachineExtensionNames
+# [{35378EAC-683F-11D2-A89A-00C04FBBCFA2}{D02B1F72-3407-48AE-BA88-E8213C6761F1}]   <- registry only
+```
+
+Fix: append the audit extension pair `[{F3CCC681-B74C-4060-9F26-CD84525DCA2A}{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}]`
+(the list must stay sorted by GUID), then bump the GPO version so clients reprocess it. A repeated
+`Set-GPRegistryValue` is the simplest way to bump it, because it updates AD and `GPT.INI`
+together. After `gpupdate /force` all three subcategories showed `Success and Failure` on both
+machines, and a marker command on WS01 produced a fresh 4688 event that Wazuh picked up as rule
+`67027` "A process was created". `setup-dc01.ps1` now does this registration itself, and the lab
+health check ([`automation/`](../automation/)) checks the *effective* audit policy plus whether 4688
+events are actually being written, not just whether the GPO exists.
+
+The lesson for SOC work: "the GPO is applied" and "the audit setting is in effect" are two
+different claims. Only the second one means the logs exist.
+
 ## USB storage blocking
 
 Set through the registry-based policy path (`Removable Storage Access` →
@@ -66,6 +107,16 @@ Get-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\Windows\RemovableStorageDevi
 Tested it live by plugging a USB stick into WS01 after the policy applied — Windows Explorer never
 showed the drive at all, rather than showing it and then denying access, which is the expected
 behavior for a full deny-all policy.
+
+**Side effect I didn't plan for (found 2026-10-10):** `Deny_All` covers *all* removable-storage
+classes, not just USB disks — including CD/DVD drives. On the Proxmox VMs that means a mounted ISO
+(here: the VirtIO guest tools) is visible in Explorer but gives "Access denied", and that applies to
+`LAB\Administrator` too. It's a computer policy under `HKLM`, so no user account can get past it,
+however privileged. Worked around by copying the installer over the `C$` admin share instead. If
+CD access is ever needed regularly, the cleaner policy is the narrower *Removable Disks: Deny
+read/write access* class (`RemovableStorageDevices\{53f5630d-b6bf-11d0-94f2-00a0c91efb8b}`), which
+blocks USB sticks but leaves optical drives alone. Not changed yet, so this write-up still matches
+what's deployed.
 
 ## Screen lock on inactivity
 
