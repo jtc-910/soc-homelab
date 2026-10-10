@@ -23,6 +23,10 @@ services:
       - pentest
     ports:
       - "8080:80"
+    # The image start script skips Apache if a stale apache2.pid survived in the
+    # container layer (restart != recreate). tmpfs = always empty on start.
+    tmpfs:
+      - /var/run/apache2
     networks:
       - vuln-net
 
@@ -49,9 +53,10 @@ docker compose --profile pentest up -d
 ## Not running by default
 
 Both containers sit behind the `pentest` [Compose profile](https://docs.docker.com/compose/how-tos/profiles/).
-A plain `docker compose up -d` in this project directory ignores them entirely, so they don't come
-back on a host reboot or when I bring the rest of the lab up — most days I don't need attack targets
-running, just the Wazuh stack. To use them:
+A plain `docker compose up -d` in this project directory ignores them entirely, so bringing the
+rest of the lab up never creates them by accident — most days I don't need attack targets running,
+just the Wazuh stack. Once they *have* been created via the profile, though, they do come back after
+a host reboot (see the `restart` note below) until I explicitly `down` them. To use them:
 
 ```bash
 docker compose --profile pentest up -d      # start
@@ -61,6 +66,25 @@ docker compose --profile pentest down       # stop and remove
 `restart: unless-stopped` is still useful *within* a pentest session — if the VM reboots while I'm
 mid-exercise, they come back up rather than needing a manual restart — but it only takes effect once
 a container has actually been created via the profile; it doesn't override the profile filter itself.
+
+## DVWA "Up" but not answering: a stale Apache PID file (found 2026-10-10)
+
+During the post-migration audit, `docker ps` showed `dvwa` as `Up`, but `curl` on port 8080 got
+`Connection reset by peer`. Inside the container only MariaDB and the image's `tail -f` were
+running — no Apache at all, and Apache's error log had no entry for that day.
+
+The cause is in the image's `/main.sh`: it starts Apache via `service apache2 start`, and Debian's
+init script refuses to start if `/var/run/apache2/apache2.pid` exists and its PID belongs to a
+running process. That file sat in the container's writable layer from a run weeks earlier
+(`docker restart` and a host reboot reuse the same container, they don't recreate it), and PIDs
+inside a container are low and repeat between boots — so the stale PID pointed at some other live
+process, and the script decided Apache was already running. The `tail -f` keeps PID 1 alive, so
+Docker reports the container healthy the whole time.
+
+Fix: mount `/var/run/apache2` as `tmpfs` (see the Compose file above), so the PID file can never
+survive a restart. Verified with several `docker restart dvwa` cycles in a row, each answering
+`200` on `/login.php`. The broader lesson: `Up` only means PID 1 is alive. For a service check,
+test the actual port (the lab health check in [`automation/`](../automation/) does exactly that).
 
 ## DVWA needed x86 emulation [ARM/UTM, historical]
 
