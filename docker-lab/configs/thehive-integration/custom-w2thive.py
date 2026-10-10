@@ -27,7 +27,8 @@ def map_severity(rule_level):
 
 
 def main():
-    logging.info(f"invoked with argv: {sys.argv}")
+    # argv[2] is the TheHive API key -- never write it to the log
+    logging.info(f"invoked with argv: {[a if i != 2 else 'REDACTED' for i, a in enumerate(sys.argv)]}")
 
     try:
         alert_file_path = sys.argv[1]
