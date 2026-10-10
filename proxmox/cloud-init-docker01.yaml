@@ -16,6 +16,10 @@ users:
       # Replace with the admin workstation's actual public key before first boot
       - ssh-ed25519 AAAA...REPLACE-ME... jonas@macbook
 
+# Key-only SSH (linux-lab/01-ssh-hardening.md). The drop-in below enforces it too, because
+# cloud-init's own 50-cloud-init.conf would otherwise win over the main sshd_config.
+ssh_pwauth: false
+
 package_update: true
 package_upgrade: true
 
@@ -23,6 +27,8 @@ packages:
   - docker.io
   - docker-compose-v2
   - ufw
+  - fail2ban
+  - unattended-upgrades
 
 # Network comes from Proxmox's own cloud-init integration (qm set --ipconfig0 in
 # create-vms.sh), not a hand-written netplan file. Confirmed on the running VM: the
@@ -55,6 +61,31 @@ write_files:
       DNS=1.1.1.1 1.0.0.1
       DNSStubListener=no
     permissions: '0644'
+  # 1.7 hardening, re-applied after the Proxmox rebuild. sshd reads sshd_config.d in
+  # lexical order and keeps the FIRST value it sees, so 10- beats cloud-init's 50-.
+  - path: /etc/ssh/sshd_config.d/10-hardening.conf
+    content: |
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      PermitRootLogin no
+    permissions: '0644'
+  - path: /etc/fail2ban/jail.local
+    content: |
+      [sshd]
+      enabled = true
+      port = ssh
+      maxretry = 3
+      bantime = 3600
+      findtime = 600
+    permissions: '0644'
+  # Security-origin updates are already the Ubuntu default; this only adds the cleanup and
+  # the nightly reboot window. A separate file instead of editing 50unattended-upgrades.
+  - path: /etc/apt/apt.conf.d/52unattended-upgrades-local
+    content: |
+      Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+      Unattended-Upgrade::Automatic-Reboot "true";
+      Unattended-Upgrade::Automatic-Reboot-Time "03:00";
+    permissions: '0644'
 
 runcmd:
   # Claim the full disk (the cloud image otherwise only partitions half of it)
@@ -81,5 +112,9 @@ runcmd:
   - ufw allow 3000/tcp
   - ufw --force enable
   - systemctl enable --now docker
+  - systemctl enable --now fail2ban
+  - systemctl restart ssh
+  # Unused on a headless VM; not every one exists on the cloud image, hence || true
+  - systemctl disable --now ModemManager.service multipathd.service multipathd.socket udisks2.service || true
 
 final_message: "docker01 cloud-init done. Next: docker-lab/scripts/restore-stacks.sh"
