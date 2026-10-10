@@ -59,6 +59,13 @@ MANAGER_CID=$(docker compose ps -q wazuh.manager)
 log "Reinstalling thehive4py into the manager's Python env (not on a volume, lost on every recreate)"
 docker exec "$MANAGER_CID" /var/ossec/framework/python/bin/python3 -m pip install thehive4py==2.0.3
 
+# The volume tarball carries whatever custom-w2thive.py was live when it was exported. The
+# thehive-integration/ copy is the maintained one (kept in sync with the repo), so it wins --
+# otherwise a restore silently brings back old bugs, e.g. the version that logged the TheHive API
+# key in plaintext (fixed 2026-10-10).
+log "Overwriting the restored custom-w2thive.py with the maintained copy from thehive-integration/"
+docker cp "$EXPORT_DIR/thehive-integration/custom-w2thive.py" "$MANAGER_CID:/var/ossec/integrations/custom-w2thive.py"
+
 log "Re-applying ownership/permissions on the integration scripts (belt and suspenders after the volume restore)"
 docker exec "$MANAGER_CID" chown root:wazuh /var/ossec/integrations/custom-w2thive /var/ossec/integrations/custom-w2thive.py
 docker exec "$MANAGER_CID" chmod 750 /var/ossec/integrations/custom-w2thive /var/ossec/integrations/custom-w2thive.py
