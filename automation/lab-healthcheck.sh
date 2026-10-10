@@ -119,6 +119,7 @@ r "sshd: password login off" "grep -q '^passwordauthentication no' <<<\"\$sshd\"
 r "sshd: root login off" "grep -q '^permitrootlogin no' <<<\"\$sshd\"" ""
 r "fail2ban sshd jail" "sudo fail2ban-client status sshd >/dev/null 2>&1" ""
 r "ufw active, default deny" "sudo ufw status verbose | grep -q 'deny (incoming)'" ""
+r "ufw rules limited to lab subnet" "! sudo ufw status | grep -q 'ALLOW IN *Anywhere'" "$(sudo ufw status | grep -c 'ALLOW IN *Anywhere') rule(s) open to Anywhere"
 for s in ModemManager multipathd udisks2; do
     r "service $s not enabled" "! systemctl is-enabled --quiet $s 2>/dev/null" "$(systemctl is-enabled $s 2>&1)"
 done

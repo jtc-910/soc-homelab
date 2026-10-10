@@ -205,6 +205,17 @@ sudo ufw status verbose
 Confirmed SSH still worked and both agents (DC01, WS01) still showed as active in the dashboard
 afterward — the firewall wasn't accidentally blocking the traffic it needed to allow.
 
+**Since the move to Docker and Proxmox:** docker01 now publishes more ports (TheHive/Cortex via
+nginx on 8443, DVWA, Juice Shop), all still limited to `192.168.100.0/24` (see
+[`proxmox/cloud-init-docker01.yaml`](../proxmox/cloud-init-docker01.yaml)). One honest caveat I
+only understood later: ports published by Docker get their own iptables rules *ahead of* UFW's
+chain, so UFW really only enforces SSH here. For the container ports the actual boundary is the
+isolated `vmbr1` bridge behind NAT, since nothing outside the lab subnet can route to it. Admin
+access from the home network goes through the Proxmox host (SSH ProxyJump and a port-forward
+tunnel), so it arrives from `192.168.100.1` and is unaffected by the restriction. The post-migration
+audit (2026-10-10) found the rebuilt docker01 had these rules open to "Anywhere"; the lab health
+check now flags that.
+
 ## Turning off unnecessary services
 
 ```bash

@@ -93,23 +93,14 @@ runcmd:
   - resize2fs /dev/sda1
   - systemctl enable --now disable-eth0-tx-offload.service
   - systemctl restart systemd-resolved
-  # UFW: default deny incoming, but explicitly allow SSH + the ports the Wazuh/TheHive/
-  # DVWA stacks publish. Docker's published ports insert iptables rules *before* UFW's
-  # own chain, so this alone won't fully close Docker-published ports to the internet --
-  # see the migration plan's Phase D2 note on the DOCKER-USER chain. This at least covers
-  # the host-level SSH/management access.
-  - ufw allow OpenSSH
-  - ufw allow 443/tcp
-  - ufw allow 9200/tcp
-  - ufw allow 1514/tcp
-  - ufw allow 1515/tcp
-  - ufw allow 514/udp
-  - ufw allow 55000/tcp
-  - ufw allow 9000/tcp
-  - ufw allow 9001/tcp
-  - ufw allow 8443/tcp
-  - ufw allow 8080/tcp
-  - ufw allow 3000/tcp
+  # UFW: default deny incoming, and only SSH + the ports the Wazuh/TheHive/DVWA stacks
+  # publish, from the lab subnet only. Admin access from the home LAN still works: SSH
+  # (ProxyJump) and the lab-forward tunnel both go through pve, so they arrive from
+  # 192.168.100.1. Caveat: Docker's published ports insert iptables rules *before* UFW's own
+  # chain, so for everything except SSH these rules document intent rather than enforce it --
+  # the real boundary there is vmbr1 being isolated behind NAT (see the migration plan's
+  # Phase D2 note on the DOCKER-USER chain).
+  - for r in 22/tcp 443/tcp 9200/tcp 1514/tcp 1515/tcp 514/udp 55000/tcp 9000/tcp 9001/tcp 8443/tcp 8080/tcp 3000/tcp; do ufw allow from 192.168.100.0/24 to any port ${r%/*} proto ${r#*/}; done
   - ufw --force enable
   - systemctl enable --now docker
   - systemctl enable --now fail2ban
